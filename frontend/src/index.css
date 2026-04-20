@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: hsl(210, 100%, 50%);
+  --color-secondary: hsl(190, 100%, 45%);
+  --color-accent: hsl(150, 100%, 40%);
+  --color-bg-dark: hsl(220, 30%, 10%);
+  --color-bg-light: hsl(210, 20%, 98%);
+}
+
+@layer base {
+  :root {
+    --primary: 210 100% 50%;
+    --secondary: 190 100% 45%;
+    --accent: 150 100% 40%;
+    --glass: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow-premium: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    background: radial-gradient(circle at top right, hsl(210, 100%, 95%), transparent),
+                radial-gradient(circle at bottom left, hsl(190, 100%, 95%), transparent);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-slate-900;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl transition-all duration-300;
+  }
+
+  .glass-card:hover {
+    @apply shadow-2xl scale-[1.01] border-white/40;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-95 transition-all duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-white/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
