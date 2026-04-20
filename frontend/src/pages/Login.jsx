@@ -20,7 +20,8 @@ const Login = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await axios.post('/api/auth/login', formData);
+      const API_URL = import.meta.env.VITE_API_URL || 'https://aquasmart123.vercel.app';
+      const res = await axios.post(`${API_URL}/api/auth/login`, formData);
       login(res.data); // handles both { success, user, token } and flat { name, role, token }
 
       // Support new API shape { user: { name, role } } and old flat { name, role }

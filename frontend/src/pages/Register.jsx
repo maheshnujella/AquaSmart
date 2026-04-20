@@ -43,7 +43,8 @@ const Register = () => {
     }
     setSubmitting(true);
     try {
-      const res = await axios.post('/api/auth/register', formData);
+      const API_URL = import.meta.env.VITE_API_URL || 'https://aquasmart123.vercel.app';
+      const res = await axios.post(`${API_URL}/api/auth/register`, formData);
       login(res.data);
       toast.success('Account created successfully! Welcome to AquaSmart 🐟');
       navigate('/');

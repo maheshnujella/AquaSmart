@@ -1,18 +1,5 @@
-const protect = require('./authMiddleware'); // Existing auth middleware
-
-const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ message: 'Not authorized' });
-    }
-    
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        message: `User role ${req.user.role} is not authorized to access this route`
-      });
-    }
-    next();
-  };
-};
+// FIX: Was importing './authMiddleware' which doesn't exist.
+// The correct file is './auth' (auth.js in the same middleware folder).
+const { protect, authorize } = require('./auth');
 
 module.exports = { protect, authorize };

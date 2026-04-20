@@ -82,21 +82,9 @@ const registerUser = async (req, res) => {
     const userExists = await User.findOne({ $or: orQuery });
     if (userExists) {
       console.log('[REGISTER] Duplicate user found:', userExists.email || userExists.phone);
-      if (email && userExists.email === email.toLowerCase().trim()) {
-        return res.status(409).json({
-          success: false,
-          message: 'An account with this email already exists. Please login.',
-        });
-      }
-      if (phone && userExists.phone === phone.trim()) {
-        return res.status(409).json({
-          success: false,
-          message: 'An account with this phone number already exists. Please login.',
-        });
-      }
       return res.status(409).json({
         success: false,
-        message: 'User already exists. Please login.',
+        message: 'User already exists',
       });
     }
 
@@ -138,11 +126,10 @@ const registerUser = async (req, res) => {
     // ── MongoDB duplicate key ────────────────────────────────────────────────
     if (error.code === 11000) {
       const field = Object.keys(error.keyValue || {})[0];
-      const label = field === 'email' ? 'email' : field === 'phone' ? 'phone number' : field;
       console.error(`[REGISTER] Duplicate key error on field: ${field}`);
       return res.status(409).json({
         success: false,
-        message: `An account with this ${label} already exists. Please login.`,
+        message: 'User already exists',
       });
     }
 
