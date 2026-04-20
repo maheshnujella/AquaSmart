@@ -2,7 +2,7 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 
 // ─── Axios base URL from Vite env ─────────────────────────────────────────────
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_API_URL || 'https://aquasmart-ilif.onrender.com';
 axios.defaults.baseURL = API;
 axios.defaults.withCredentials = true; // Send cookies cross-origin
 
