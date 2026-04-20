@@ -21,12 +21,15 @@ const Login = () => {
     setSubmitting(true);
     try {
       const res = await axios.post('/api/auth/login', formData);
-      login(res.data);   // stores user + token, sets axios header
-      toast.success(`Welcome back, ${res.data.name}! 🎉`);
+      login(res.data); // handles both { success, user, token } and flat { name, role, token }
+
+      // Support new API shape { user: { name, role } } and old flat { name, role }
+      const userData = res.data.user || res.data;
+      toast.success(`Welcome back, ${userData.name}! 🎉`);
 
       // Role-based redirect
-      if (res.data.role === 'Admin') navigate('/admin');
-      else if (res.data.role === 'Doctor') navigate('/doctor/dashboard');
+      if (userData.role === 'Admin') navigate('/admin');
+      else if (userData.role === 'Doctor') navigate('/doctor/dashboard');
       else navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed. Check credentials.');

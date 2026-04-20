@@ -1,49 +1,48 @@
 const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
-const { registerUser, loginUser, logoutUser, getUserProfile, forgotPassword, resetPassword } = require('../controllers/authController');
+const {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getUserProfile,
+  updateUserProfile,
+  forgotPassword,
+  resetPassword,
+} = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
-// Rate limiting for auth routes to prevent brute force
+// ─── Rate limiter for auth endpoints ─────────────────────────────────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 requests per windowMs for auth
-  message: 'Too many login attempts from this IP, please try again after 15 minutes'
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many attempts from this IP. Please try again after 15 minutes.',
+  },
 });
 
-// Middleware to handle validation errors
-const validate = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-};
+// ─── POST /api/auth/register ──────────────────────────────────────────────────
+router.post('/register', authLimiter, registerUser);
 
-router.post(
-  '/register',
-  [
-    body('name', 'Name is required').not().isEmpty(),
-    body('password', 'Password must be 6-10 characters with uppercase, number, and special symbol').isLength({ min: 6, max: 10 })
-  ],
-  validate,
-  registerUser
-);
+// ─── POST /api/auth/login ─────────────────────────────────────────────────────
+router.post('/login', authLimiter, loginUser);
 
-router.post(
-  '/login',
-  authLimiter,
-  [
-    body('login', 'Login identifier (email or phone) is required').exists(),
-    body('password', 'Password is required').exists()
-  ],
-  validate,
-  loginUser
-);
-
+// ─── POST /api/auth/logout ────────────────────────────────────────────────────
 router.post('/logout', logoutUser);
 
+// ─── GET  /api/auth/profile ───────────────────────────────────────────────────
 router.get('/profile', protect, getUserProfile);
+
+// ─── PUT  /api/auth/profile ───────────────────────────────────────────────────
+router.put('/profile', protect, updateUserProfile);
+
+// ─── POST /api/auth/forgot-password ──────────────────────────────────────────
+router.post('/forgot-password', authLimiter, forgotPassword);
+
+// ─── POST /api/auth/reset-password/:token ────────────────────────────────────
+router.post('/reset-password/:token', resetPassword);
 
 module.exports = router;
