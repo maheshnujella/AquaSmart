@@ -15,8 +15,6 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-const IS_PROD = process.env.NODE_ENV === 'production';
-
 // ✅ Allowed frontend URLs
 const ALLOWED_ORIGINS = [
   'https://aquasmart123.vercel.app',
@@ -30,7 +28,7 @@ console.log('✅ Allowed Origins:', ALLOWED_ORIGINS);
 connectDB();
 
 // ─────────────────────────────────────────────
-// ✅ CORS (ONLY ONCE — FIXED)
+// ✅ CORS (FIXED — ONLY ONE LINE)
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -45,8 +43,8 @@ const corsOptions = {
   credentials: true,
 };
 
-app.use(cors(corsOptions));
-app.options('/*', cors(corsOptions)); // ✅ preflight fix
+app.use(cors(corsOptions));   // ✅ KEEP ONLY THIS
+// ❌ REMOVE app.options('/*', cors(corsOptions));
 
 // ─────────────────────────────────────────────
 // Security
@@ -117,7 +115,7 @@ app.use('/api/payments', require('./routes/payments'));
 // Static
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
-// 404
+// 404 (SAFE — no wildcard)
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
