@@ -1,72 +1,125 @@
-import api from "../api";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import api from "../api"; // make sure this file exists
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+const Register = () => {
+  const navigate = useNavigate();
 
-  console.log("SUBMIT CLICKED", formData); // ✅ confirm trigger
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
 
-  // ✅ name check
-  if (!formData.name || !formData.name.trim()) {
-    toast.error("Name is required");
-    return;
-  }
+  const [submitting, setSubmitting] = useState(false);
 
-  // ✅ email or phone
-  if (!formData.email && !formData.phone) {
-    toast.error("Please provide an email or phone number.");
-    return;
-  }
-
-  // ✅ password presence
-  if (!formData.password) {
-    toast.error("Password is required");
-    return;
-  }
-
-  // ✅ strong password check (match backend)
-  const isValid =
-    formData.password.length >= 6 &&
-    formData.password.length <= 10 &&
-    /[A-Z]/.test(formData.password) &&
-    /[0-9]/.test(formData.password) &&
-    /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
-
-  if (!isValid) {
-    toast.error("Password must contain A-Z, number, special char");
-    return;
-  }
-
-  try {
-    setSubmitting(true);
-
-    const res = await api.post("/api/auth/register", formData, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
     });
+  };
 
-    console.log("REGISTER SUCCESS:", res.data);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    // ✅ safer login call
-    login(res.data);
+    console.log("SUBMIT CLICKED", formData);
 
-    toast.success("Account created successfully! 🐟");
+    if (!formData.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
 
-    navigate("/");
-  } catch (err) {
-    console.error("REGISTER ERROR FULL:", err);
+    if (!formData.email && !formData.phone) {
+      toast.error("Provide email or phone");
+      return;
+    }
 
-    // ✅ show real backend message clearly
-    const message =
-      err.response?.data?.message ||
-      err.response?.data ||
-      err.message ||
-      "Registration failed";
+    const isValid = formData.password.length >= 6;
 
-    console.log("BACKEND MESSAGE:", message);
+    if (!isValid) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
 
-    toast.error(message);
-  } finally {
-    setSubmitting(false);
-  }
+    try {
+      setSubmitting(true);
+
+      const res = await api.post("/api/auth/register", formData);
+
+      console.log("REGISTER SUCCESS:", res.data);
+
+      toast.success("Account created successfully!");
+
+      navigate("/");
+    } catch (err) {
+      console.error("ERROR:", err);
+
+      toast.error(
+        err.response?.data?.message || "Registration failed"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Register</h2>
+
+      {/* ✅ IMPORTANT: form connected */}
+      <form onSubmit={handleSubmit}>
+
+        {/* NAME */}
+        <input
+          type="text"
+          name="name"
+          placeholder="Enter Name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        {/* EMAIL */}
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter Email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        {/* PHONE */}
+        <input
+          type="text"
+          name="phone"
+          placeholder="Enter Phone"
+          value={formData.phone}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        {/* PASSWORD */}
+        <input
+          type="password"
+          name="password"
+          placeholder="Enter Password"
+          value={formData.password}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        {/* ✅ IMPORTANT: button inside form */}
+        <button type="submit" disabled={submitting}>
+          {submitting ? "Creating..." : "Create Account"}
+        </button>
+
+      </form>
+    </div>
+  );
 };
+
+export default Register;

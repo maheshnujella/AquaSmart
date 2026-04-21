@@ -58,19 +58,11 @@ const registerUser = async (req, res) => {
     }
 
     // ── Password complexity (mirrors model validation) ────────────────────────
-    const pwdErrors = [];
-    if (password.length < 6 || password.length > 10)
-      pwdErrors.push('Password must be 6–10 characters');
-    if (!/[A-Z]/.test(password)) pwdErrors.push('must include an uppercase letter');
-    if (!/[0-9]/.test(password)) pwdErrors.push('must include a number');
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
-      pwdErrors.push('must include a special character');
-
-    if (pwdErrors.length > 0) {
-      console.log('[REGISTER] Password validation failed:', pwdErrors);
+    if (password.length < 6) {
+      console.log('[REGISTER] Password validation failed: < 6 chars');
       return res.status(400).json({
         success: false,
-        message: `Password too weak: ${pwdErrors.join(', ')}`,
+        message: `Password must be at least 6 characters`,
       });
     }
 

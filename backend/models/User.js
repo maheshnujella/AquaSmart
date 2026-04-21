@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a password'],
     minlength: [6, 'Password must be at least 6 characters'],
-    maxlength: [10, 'Password must be at most 10 characters'],
     select: false
   },
   role: {
@@ -101,14 +100,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Password complexity validation
-userSchema.path('password').validate(function (value) {
-  const hasUpper = /[A-Z]/.test(value);
-  const hasNumber = /[0-9]/.test(value);
-  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(value);
-  return hasUpper && hasNumber && hasSpecial;
-}, 'Password must include uppercase, number, and special symbol');
-
+// Password complexity validation removed to allow simple 6+ char passwords
 // Encrypt password using bcrypt
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
