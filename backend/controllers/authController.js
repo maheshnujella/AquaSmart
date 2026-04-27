@@ -147,9 +147,10 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     console.log('\n📥 [LOGIN] Request received');
-    const { login, password } = req.body; // 'login' = email or phone
+    const { login, email, phone, password } = req.body;
+    const loginIdentifier = login || email || phone;
 
-    if (!login || !password) {
+    if (!loginIdentifier || !password) {
       return res.status(400).json({
         success: false,
         message: 'Please provide your email/phone and password',
@@ -157,17 +158,17 @@ const loginUser = async (req, res) => {
     }
 
     const user = await User.findOne({
-      $or: [{ email: login.toLowerCase().trim() }, { phone: login.trim() }],
+      $or: [{ email: loginIdentifier.toLowerCase().trim() }, { phone: loginIdentifier.trim() }],
     }).select('+password');
 
     if (!user) {
-      console.log(`[LOGIN] No user found for: ${login}`);
+      console.log(`[LOGIN] No user found for: ${loginIdentifier}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      console.log(`[LOGIN] Wrong password for: ${login}`);
+      console.log(`[LOGIN] Wrong password for: ${loginIdentifier}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
