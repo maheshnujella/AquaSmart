@@ -23,7 +23,7 @@ console.log(`🔗 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
 // ─── Allowed CORS Origins ─────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
-  'https://aqua-smart-frontend.vercel.app', // ✅ your real frontend
+  'https://aquasmart123.vercel.app', // ✅ your real frontend
 ];
 
 if (process.env.FRONTEND_URL) {
