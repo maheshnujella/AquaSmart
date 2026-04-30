@@ -24,19 +24,9 @@ console.log(`🔗 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
 const app = express();
 const server = http.createServer(app);
 
-// ─── CORS CONFIG (PERMISSIVE FOR VERCEL/LOCAL) ────────────────
+// ─── CORS CONFIG (REFLECT ORIGIN) ────────────────────────────
 const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow all vercel, localhost, and render origins
-    if (!origin || 
-        origin.includes("vercel.app") || 
-        origin.includes("localhost") || 
-        origin.includes("onrender.com")
-    ) {
-      return callback(null, true);
-    }
-    return callback(new Error("Not allowed by CORS"));
-  },
+  origin: true, // Reflect the request origin (allows all, but supports credentials)
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
