@@ -20,20 +20,24 @@ if (!process.env.JWT_SECRET) console.error('❌ JWT_SECRET is not set!');
 console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV}`);
 console.log(`🔗 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
 
-// ─── Allowed CORS Origins ─────────────────────────────────────
+// ─── Express App ─────────────────────────────────────────────
+const app = express();
+const server = http.createServer(app);
+
+// ─── Allowed Origins ─────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "https://aquasmart23.vercel.app",
 ];
 
-// allow ALL vercel preview URLs (important)
+// ─── CORS CONFIG (ONLY ONE BLOCK) ────────────────────────────
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
     if (
-      ALLOWED_ORIGINS.includes(origin) ||
-      origin.includes("vercel.app")
+      origin.includes("vercel.app") ||
+      origin === "http://localhost:5173"
     ) {
       return callback(null, true);
     }
@@ -48,9 +52,6 @@ app.use(cors(corsOptions));
 // ─── Connect MongoDB ──────────────────────────────────────────────────────────
 connectDB();
 
-// ─── Express App ─────────────────────────────────────────────────────────────
-const app = express();
-const server = http.createServer(app);
 
 // ─── Socket.IO (no wildcard CORS) ────────────────────────────────────────────
 const io = new Server(server, {
@@ -69,22 +70,6 @@ app.use(
   })
 );
 
-// ─── CORS — single middleware, no wildcard ────────────────────────────────────
-// NOTE: Do NOT use app.options('*') — it breaks Express 5 (PathError)
-// cors() automatically handles OPTIONS pre-flight when called as middleware
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // server-to-server / curl / Postman
-    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    console.warn(`⛔ CORS blocked: ${origin}`);
-    return callback(new Error(`CORS: Origin "${origin}" not allowed`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
-};
-app.use(cors(corsOptions)); // This handles pre-flight OPTIONS automatically
 
 // ─── Body parsers ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
