@@ -43,8 +43,7 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-// Handle preflight for all routes
-app.options("*", cors(corsOptions));
+// Handle preflight for all routes automatically via middleware
 app.use(cors(corsOptions));
 
 // ─── Allowed Origins (for Socket.io and logs) ─────────────────
