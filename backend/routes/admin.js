@@ -1,14 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-const Log           = require('../models/Log');
-const User          = require('../models/User');
-const Product       = require('../models/Product');
-const Order         = require('../models/Order');
-const Booking       = require('../models/Booking');
-const Listing       = require('../models/Listing');
-const Doctor        = require('../models/Doctor');
-const RepairService = require('../models/RepairService');
+const Log            = require('../models/Log');
+const User           = require('../models/User');
+const Product        = require('../models/Product');
+const Order          = require('../models/Order');
+const Booking        = require('../models/Booking');
+const Listing        = require('../models/Listing');
+const Doctor         = require('../models/Doctor');
+const RepairService  = require('../models/RepairService');
+const Payment        = require('../models/Payment');
+const FeedCompany    = require('../models/FeedCompany');
+const FeedSubcategory = require('../models/FeedSubcategory');
 const { protect, authorize } = require('../middleware/auth');
 
 // Apply auth + Admin role to ALL admin routes
@@ -480,6 +483,185 @@ router.get('/logs', async (req, res) => {
     res.json(logs);
   } catch (err) {
     console.error('[ADMIN] GET /logs:', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEED COMPANIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// @route GET /api/admin/feed-companies
+router.get('/feed-companies', async (req, res) => {
+  try {
+    const companies = await FeedCompany.find({}).sort({ name: 1 });
+    res.json({ success: true, data: companies });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route POST /api/admin/feed-companies
+router.post('/feed-companies', async (req, res) => {
+  try {
+    const { name, logo, description } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Company name is required' });
+    const company = await FeedCompany.create({ name, logo: logo || '', description: description || '', createdBy: req.user._id });
+    await Log.create({ user: req.user._id, action: 'FEED_COMPANY_CREATE', details: `Created feed company: ${name}`, ip: req.ip, userAgent: req.get('User-Agent') }).catch(() => {});
+    res.status(201).json({ success: true, data: company });
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ success: false, message: 'Company name already exists' });
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @route PUT /api/admin/feed-companies/:id
+router.put('/feed-companies/:id', async (req, res) => {
+  try {
+    const { name, logo, description, isActive } = req.body;
+    const company = await FeedCompany.findById(req.params.id);
+    if (!company) return res.status(404).json({ success: false, message: 'Company not found' });
+    if (name)        company.name        = name;
+    if (logo !== undefined)        company.logo        = logo;
+    if (description !== undefined) company.description = description;
+    if (isActive !== undefined)    company.isActive    = isActive;
+    const updated = await company.save();
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route DELETE /api/admin/feed-companies/:id
+router.delete('/feed-companies/:id', async (req, res) => {
+  try {
+    const company = await FeedCompany.findById(req.params.id);
+    if (!company) return res.status(404).json({ success: false, message: 'Company not found' });
+    await company.deleteOne();
+    // Clean up subcategories
+    await FeedSubcategory.deleteMany({ company: req.params.id });
+    await Log.create({ user: req.user._id, action: 'FEED_COMPANY_DELETE', details: `Deleted feed company: ${company.name}`, ip: req.ip, userAgent: req.get('User-Agent') }).catch(() => {});
+    res.json({ success: true, message: 'Feed company deleted' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEED SUBCATEGORIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// @route GET /api/admin/feed-subcategories?company=:id
+router.get('/feed-subcategories', async (req, res) => {
+  try {
+    const filter = req.query.company ? { company: req.query.company } : {};
+    const subcategories = await FeedSubcategory.find(filter)
+      .populate('company', 'name')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: subcategories });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route POST /api/admin/feed-subcategories
+router.post('/feed-subcategories', async (req, res) => {
+  try {
+    const { company, name, description } = req.body;
+    if (!company || !name) return res.status(400).json({ success: false, message: 'company and name are required' });
+    const sub = await FeedSubcategory.create({ company, name, description: description || '', createdBy: req.user._id });
+    await Log.create({ user: req.user._id, action: 'FEED_SUBCATEGORY_CREATE', details: `Created subcategory: ${name}`, ip: req.ip, userAgent: req.get('User-Agent') }).catch(() => {});
+    const populated = await sub.populate('company', 'name');
+    res.status(201).json({ success: true, data: populated });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @route PUT /api/admin/feed-subcategories/:id
+router.put('/feed-subcategories/:id', async (req, res) => {
+  try {
+    const { name, description, isActive } = req.body;
+    const sub = await FeedSubcategory.findById(req.params.id);
+    if (!sub) return res.status(404).json({ success: false, message: 'Subcategory not found' });
+    if (name)                sub.name        = name;
+    if (description !== undefined) sub.description = description;
+    if (isActive !== undefined)    sub.isActive    = isActive;
+    const updated = await sub.save();
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route DELETE /api/admin/feed-subcategories/:id
+router.delete('/feed-subcategories/:id', async (req, res) => {
+  try {
+    const sub = await FeedSubcategory.findById(req.params.id);
+    if (!sub) return res.status(404).json({ success: false, message: 'Subcategory not found' });
+    await sub.deleteOne();
+    await Log.create({ user: req.user._id, action: 'FEED_SUBCATEGORY_DELETE', details: `Deleted subcategory: ${sub.name}`, ip: req.ip, userAgent: req.get('User-Agent') }).catch(() => {});
+    res.json({ success: true, message: 'Subcategory deleted' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PAYMENTS (Admin view)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// @route GET /api/admin/payments
+router.get('/payments', async (req, res) => {
+  try {
+    const payments = await Payment.find({})
+      .populate('order', 'orderType status pricing')
+      .populate('user', 'name email phone')
+      .populate('shopkeeper', 'name shopName')
+      .populate('deliveryAgent', 'name phone')
+      .sort({ createdAt: -1 });
+
+    const totalRevenue      = payments.reduce((s, p) => s + (p.amount || 0), 0);
+    const adminCommission   = payments.reduce((s, p) => s + (p.splitDetails?.adminAmount || 0), 0);
+    const shopkeeperPayouts = payments.reduce((s, p) => s + (p.splitDetails?.shopkeeperAmount || 0), 0);
+    const deliveryPayouts   = payments.reduce((s, p) => s + (p.splitDetails?.deliveryAmount || 0), 0);
+
+    res.json({
+      success: true,
+      data: payments,
+      stats: { totalRevenue, adminCommission, shopkeeperPayouts, deliveryPayouts },
+    });
+  } catch (err) {
+    console.error('[ADMIN] GET /payments:', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route GET /api/admin/stats/roles  — role breakdown for dashboard
+router.get('/stats/roles', async (req, res) => {
+  try {
+    const roleGroups = await User.aggregate([
+      { $group: { _id: '$role', count: { $sum: 1 } } },
+    ]);
+    const result = {};
+    roleGroups.forEach(g => { result[g._id] = g.count; });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route PUT /api/admin/orders/:id/assign-delivery
+router.put('/orders/:id/assign-delivery', async (req, res) => {
+  try {
+    const { deliveryAgentId } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    order.deliveryAgent = deliveryAgentId;
+    order.status = 'Processing';
+    await order.save();
+    res.json({ success: true, message: 'Delivery agent assigned', order });
+  } catch (err) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

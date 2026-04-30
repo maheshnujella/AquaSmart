@@ -43,17 +43,22 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['Online', 'Cash on Delivery'],
-    default: 'Cash on Delivery'
+    enum: ['COD', 'Online'],
+    required: true,
+    default: 'COD'
+  },
+  upiApp: {
+    type: String,
+    enum: ['PhonePe', 'GPay', 'Paytm', 'Other'],
   },
   pricing: {
-    mrpTotal: { type: Number, default: 0 },
-    discount: { type: Number, default: 0 },
-    handlingFee: { type: Number, default: 0 },
-    platformFee: { type: Number, default: 0 },
-    deliveryCharges: { type: Number, default: 0 },
-    gst: { type: Number, default: 0 },
-    totalAmount: { type: Number, required: true }
+    mrpTotal:       { type: Number, default: 0 },
+    discount:       { type: Number, default: 0 },
+    handlingFee:    { type: Number, default: 0 },
+    platformFee:    { type: Number, default: 0 },
+    deliveryCharges:{ type: Number, default: 0 },
+    gst:            { type: Number, default: 0 },
+    totalAmount:    { type: Number, required: true }
   },
   isPaid: {
     type: Boolean,
@@ -77,11 +82,6 @@ const orderSchema = new mongoose.Schema({
     type: String,
     enum: ['Pending', 'Paid', 'In Escrow', 'Refunded', 'Failed'],
     default: 'Pending'
-  },
-  paymentMethod: {
-    type: String,
-    enum: ['COD', 'Online'],
-    required: true
   },
   transactionId: String,
   refundDetails: {

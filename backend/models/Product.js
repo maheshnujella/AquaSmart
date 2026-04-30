@@ -13,10 +13,25 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Please select a category'],
-    enum: ['Feed', 'Medicine']
+    enum: ['Feed', 'Medicine', 'Mineral']
   },
   subCategory: {
     type: String, // e.g., 'Fish Feed', 'Shrimp Feed', 'Fish Medicine', 'Water Treatment'
+  },
+  // Feed hierarchy
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FeedCompany',
+  },
+  feedSubcategory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FeedSubcategory',
+  },
+  companyName: {
+    type: String, // denormalized for quick display
+  },
+  feedSubcategoryName: {
+    type: String, // denormalized for quick display
   },
   description: {
     type: String,

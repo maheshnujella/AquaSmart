@@ -100,13 +100,39 @@ app.use(
 // ─── Socket.IO events ─────────────────────────────────────────────────────────
 io.on('connection', (socket) => {
   console.log('🔌 Socket connected:', socket.id);
+
+  // Delivery boy joins a room for a specific order
+  socket.on('joinOrderRoom', ({ orderId }) => {
+    socket.join(`order:${orderId}`);
+    console.log(`📍 Socket ${socket.id} joined room: order:${orderId}`);
+  });
+
+  // Delivery boy leaves the room
+  socket.on('leaveOrderRoom', ({ orderId }) => {
+    socket.leave(`order:${orderId}`);
+  });
+
+  // Delivery boy emits live location
   socket.on('updateLocation', (data) => {
+    // Broadcast to all in the order's room (customer listening)
+    io.to(`order:${data.orderId}`).emit(`locationUpdate:${data.orderId}`, data);
+    // Also broadcast globally for backward-compat
     io.emit(`locationUpdate:${data.orderId}`, data);
   });
+
+  // Order status changed (admin/shopkeeper triggers)
+  socket.on('orderStatusChange', ({ orderId, status }) => {
+    io.to(`order:${orderId}`).emit(`orderStatus:${orderId}`, { status });
+    io.emit(`orderStatus:${orderId}`, { status });
+  });
+
   socket.on('disconnect', () => {
     console.log('🔌 Socket disconnected:', socket.id);
   });
 });
+
+// Expose io so controllers can emit events
+app.set('io', io);
 
 // ─── Health / Test endpoints ──────────────────────────────────────────────────
 app.get('/', (_req, res) => {
@@ -142,6 +168,8 @@ app.use('/api/doctors',  require('./routes/doctors'));
 app.use('/api/repair',   require('./routes/repair'));
 app.use('/api/market',   require('./routes/market'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/tracking', require('./routes/tracking'));
+app.use('/api/delivery', require('./routes/delivery'));
 
 // ─── Static uploads ──────────────────────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -179,6 +207,16 @@ app.use((err, req, res, _next) => {
 // ─── Start server ─────────────────────────────────────────────────────────────
 // Render requires binding to process.env.PORT
 const PORT = process.env.PORT || 5000;
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use. Run: taskkill /F /IM node.exe`);
+    process.exit(1);
+  } else {
+    throw err;
+  }
+});
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT} [${process.env.NODE_ENV}]`);
   console.log(`📡 Accepting connections from: ${ALLOWED_ORIGINS.join(', ')}`);
