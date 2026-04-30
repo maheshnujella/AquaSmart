@@ -37,7 +37,8 @@ const corsOptions = {
 
     if (
       origin.includes("vercel.app") ||
-      origin === "http://localhost:5173"
+      origin === "http://localhost:5173" ||
+      origin === "https://aquasmart23.vercel.app"
     ) {
       return callback(null, true);
     }
@@ -46,6 +47,9 @@ const corsOptions = {
     return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
@@ -53,10 +57,10 @@ app.use(cors(corsOptions));
 connectDB();
 
 
-// ─── Socket.IO (no wildcard CORS) ────────────────────────────────────────────
+// ─── Socket.IO (Dynamic CORS) ────────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
-    origin: ALLOWED_ORIGINS,
+    origin: corsOptions.origin,
     methods: ['GET', 'POST'],
     credentials: true,
   },
