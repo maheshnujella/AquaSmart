@@ -24,38 +24,37 @@ console.log(`🔗 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
 const app = express();
 const server = http.createServer(app);
 
-// ─── Allowed Origins ─────────────────────────────────────────
+// ─── CORS CONFIG (PERMISSIVE FOR VERCEL/LOCAL) ────────────────
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow all vercel, localhost, and render origins
+    if (!origin || 
+        origin.includes("vercel.app") || 
+        origin.includes("localhost") || 
+        origin.includes("onrender.com")
+    ) {
+      return callback(null, true);
+    }
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  optionsSuccessStatus: 200,
+};
+
+// Handle preflight for all routes
+app.options("*", cors(corsOptions));
+app.use(cors(corsOptions));
+
+// ─── Allowed Origins (for Socket.io and logs) ─────────────────
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "https://aquasmart23.vercel.app",
 ];
 
-// ─── CORS CONFIG (ONLY ONE BLOCK) ────────────────────────────
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-
-    if (
-      origin.includes("vercel.app") ||
-      origin === "http://localhost:5173" ||
-      origin === "https://aquasmart23.vercel.app"
-    ) {
-      return callback(null, true);
-    }
-
-    console.log("⛔ Blocked by CORS:", origin);
-    return callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-// ─── Connect MongoDB ──────────────────────────────────────────────────────────
+// ─── Connect MongoDB ──────────────────────────────────────────
 connectDB();
-
 
 // ─── Socket.IO (Dynamic CORS) ────────────────────────────────────────────────
 const io = new Server(server, {
