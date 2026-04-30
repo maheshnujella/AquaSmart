@@ -46,6 +46,7 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
   const [upiRef, setUpiRef]     = useState('');
   const [split, setSplit]        = useState(null);
   const [error, setError]        = useState('');
+  const [upiUri, setUpiUri]      = useState('');
 
   // Countdown timer during processing step
   useEffect(() => {
@@ -64,9 +65,15 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
     setStep('processing');
     setTimeLeft(TIMER_SECONDS);
     try {
-      await api.post('/api/payments/initiate-upi', { orderId, upiApp: selectedApp });
-    } catch {
-      // ignore – we'll confirm in next step
+      const { data } = await api.post('/api/payments/initiate-upi', { orderId, upiApp: selectedApp });
+      if (data.success && data.data.upiUri) {
+        setUpiUri(data.data.upiUri);
+        // Open the UPI app via deep link
+        window.location.href = data.data.upiUri;
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to initiate payment');
+      setStep('failed');
     }
   };
 
@@ -178,6 +185,14 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
               </div>
 
               <div className="space-y-3">
+                {upiUri && (
+                  <button
+                    onClick={() => window.location.href = upiUri}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-2xl font-bold transition-all"
+                  >
+                    🚀 Open {selectedApp} Again
+                  </button>
+                )}
                 <button
                   onClick={handleConfirm}
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-black shadow-lg shadow-green-200 transition-all hover:scale-[1.02]"
