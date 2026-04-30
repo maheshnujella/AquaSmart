@@ -24,9 +24,32 @@ console.log(`🔗 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
 const app = express();
 const server = http.createServer(app);
 
-// ─── CORS CONFIG (REFLECT ORIGIN) ────────────────────────────
+// ─── Allowed Origins ──────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://aquasmart23.vercel.app",
+  "https://aquasmart23-qikuhtfgi-maheshnujellas-projects.vercel.app",
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+// ─── CORS CONFIG ──────────────────────────────────────────────
 const corsOptions = {
-  origin: true, // Reflect the request origin (allows all, but supports credentials)
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in ALLOWED_ORIGINS or is a vercel preview URL
+    const isAllowed = ALLOWED_ORIGINS.includes(origin) || 
+                     (origin.startsWith('https://aquasmart23-') && origin.endsWith('.vercel.app'));
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
@@ -35,12 +58,6 @@ const corsOptions = {
 
 // Handle preflight for all routes automatically via middleware
 app.use(cors(corsOptions));
-
-// ─── Allowed Origins (for Socket.io and logs) ─────────────────
-const ALLOWED_ORIGINS = [
-  "http://localhost:5173",
-  "https://aquasmart23.vercel.app",
-];
 
 // ─── Connect MongoDB ──────────────────────────────────────────
 connectDB();
