@@ -33,7 +33,7 @@ const corsOptions = {
 
     if (
       ALLOWED_ORIGINS.includes(origin) ||
-      origin.includes("vercel.app")   // ✅ THIS LINE FIXES YOUR ERROR
+      origin.includes("vercel.app")
     ) {
       return callback(null, true);
     }
