@@ -20,20 +20,31 @@ if (!process.env.JWT_SECRET) console.error('❌ JWT_SECRET is not set!');
 console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV}`);
 console.log(`🔗 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
 
-// ─── Allowed CORS Origins ─────────────────────────────────────────────────────
+// ─── Allowed CORS Origins ─────────────────────────────────────
 const ALLOWED_ORIGINS = [
-  'http://localhost:5173',
-  'https://aquasmart123.vercel.app', // ✅ your real frontend
+  "http://localhost:5173",
+  "https://aquasmart23.vercel.app",
 ];
 
-if (process.env.FRONTEND_URL) {
-  process.env.FRONTEND_URL.split(',').forEach((u) => {
-    const t = u.trim();
-    if (t && !ALLOWED_ORIGINS.includes(t)) ALLOWED_ORIGINS.push(t);
-  });
-}
-console.log('✅ Allowed CORS origins:', ALLOWED_ORIGINS);
+// allow ALL vercel preview URLs (important)
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
 
+    if (
+      ALLOWED_ORIGINS.includes(origin) ||
+      origin.includes("vercel.app")   // ✅ THIS LINE FIXES YOUR ERROR
+    ) {
+      return callback(null, true);
+    }
+
+    console.log("⛔ Blocked by CORS:", origin);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 // ─── Connect MongoDB ──────────────────────────────────────────────────────────
 connectDB();
 
