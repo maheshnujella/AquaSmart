@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { UserCheck, UserX, FileText, ExternalLink, ShieldAlert } from 'lucide-react';
 
@@ -13,7 +13,7 @@ const ManageDoctors = () => {
 
   const fetchPendingDoctors = async () => {
     try {
-      const { data } = await axios.get('/api/admin/doctors/pending');
+      const { data } = await api.get('/api/admin/doctors/pending');
       setPendingDoctors(data);
     } catch (error) {
       toast.error('Failed to load pending doctors');
@@ -24,7 +24,7 @@ const ManageDoctors = () => {
 
   const approveDoctor = async (id) => {
     try {
-      await axios.put(`/api/admin/doctors/${id}/verify`);
+      await api.put(`/api/admin/doctors/${id}/verify`);
       toast.success('Doctor approved and verified!');
       fetchPendingDoctors();
     } catch (error) {

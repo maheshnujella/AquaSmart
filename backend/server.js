@@ -41,7 +41,8 @@ const corsOptions = {
     
     // Check if origin is in ALLOWED_ORIGINS or is a vercel preview URL
     const isAllowed = ALLOWED_ORIGINS.includes(origin) || 
-                     (origin.startsWith('https://aquasmart23-') && origin.endsWith('.vercel.app'));
+                     origin.includes('maheshnujellas-projects.vercel.app') ||
+                     origin.endsWith('.vercel.app');
     
     if (isAllowed) {
       callback(null, true);

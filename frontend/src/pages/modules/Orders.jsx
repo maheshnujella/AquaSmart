@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 import { 
   Package, Truck, CheckCircle, Clock, 
   ChevronRight, IndianRupee, ShoppingBag,
@@ -19,7 +19,7 @@ const Orders = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data } = await axios.get('/api/orders/myorders');
+      const { data } = await api.get('/api/orders/myorders');
       setOrders(data);
     } catch (err) {
       console.error(err);

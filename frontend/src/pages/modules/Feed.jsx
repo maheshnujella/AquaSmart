@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { ShoppingCart, Search, Loader2, Package, AlertCircle } from 'lucide-react';
 import { CartContext } from '../../context/CartContext';
@@ -19,7 +19,7 @@ const Feed = () => {
       setLoading(true);
       setError(null);
       try {
-        const { data } = await axios.get('/api/products?category=Feed');
+        const { data } = await api.get('/api/products?category=Feed');
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         setError('Failed to load feed products. Please try again.');

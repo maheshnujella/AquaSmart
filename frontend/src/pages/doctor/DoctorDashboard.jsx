@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../../context/AuthContext';
 import { 
@@ -21,7 +21,7 @@ const DoctorDashboard = () => {
   const fetchRequests = async () => {
     try {
       // In a real app, this endpoint would filter by req.user._id on backend
-      const { data } = await axios.get('/api/doctors/requests'); // Need to implement this route
+      const { data } = await api.get('/api/doctors/requests'); // Need to implement this route
       setRequests(data);
     } catch (error) {
       toast.error('Failed to load requests');
@@ -32,7 +32,7 @@ const DoctorDashboard = () => {
 
   const updateStatus = async (id, status) => {
     try {
-      await axios.put(`/api/doctors/requests/${id}/status`, { status });
+      await api.put(`/api/doctors/requests/${id}/status`, { status });
       toast.success(`Request ${status}`);
       fetchRequests();
     } catch (error) {
@@ -43,7 +43,7 @@ const DoctorDashboard = () => {
   const submitReport = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`/api/doctors/requests/${selectedRequest._id}/report`, {
+      await api.put(`/api/doctors/requests/${selectedRequest._id}/report`, {
         content: reportText,
         file: 'sample_report.pdf' // Simulated file
       });

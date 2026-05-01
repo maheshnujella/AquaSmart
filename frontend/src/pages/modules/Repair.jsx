@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import api from '../../api';
 import { 
   Wrench, MapPin, Navigation, Camera, 
   ArrowRight, ArrowLeft, CheckCircle2, ShieldCheck, Zap 
@@ -54,7 +54,7 @@ const Repair = () => {
 
   const submitRequest = async () => {
     try {
-      await axios.post('/api/repair/requests', formData);
+      await api.post('/api/repair/requests', formData);
       toast.success('Repair Request Broadcasted!');
       setStep(5);
     } catch (error) {

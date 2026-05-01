@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { Upload, Plus, Save, Loader2, Trash2, Pencil, X, Package, RefreshCw } from 'lucide-react';
 
@@ -23,7 +23,7 @@ const ManageProducts = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/products');
+      const { data } = await api.get('/api/products');
       setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error('Failed to load products');
@@ -46,7 +46,7 @@ const ManageProducts = () => {
     uploadData.append('image', file);
     setUploading(true);
     try {
-      const { data } = await axios.post('/api/upload', uploadData, {
+      const { data } = await api.post('/api/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setFormData((prev) => ({ ...prev, image: data }));
@@ -73,7 +73,7 @@ const ManageProducts = () => {
     if (!window.confirm(`Delete "${name}"?`)) return;
     setDeleting(id);
     try {
-      await axios.delete(`/api/products/${id}`);
+      await api.delete(`/api/products/${id}`);
       setProducts((prev) => prev.filter((p) => p._id !== id));
       toast.success('Product deleted');
     } catch (err) {
@@ -96,11 +96,11 @@ const ManageProducts = () => {
     setSubmitting(true);
     try {
       if (isEditing) {
-        const { data } = await axios.put(`/api/products/${editId}`, formData);
+        const { data } = await api.put(`/api/products/${editId}`, formData);
         setProducts((prev) => prev.map((p) => (p._id === editId ? data : p)));
         toast.success('Product updated!');
       } else {
-        const { data } = await axios.post('/api/products', formData);
+        const { data } = await api.post('/api/products', formData);
         setProducts((prev) => [data, ...prev]);
         toast.success('Product added!');
       }

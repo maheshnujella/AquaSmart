@@ -4,7 +4,7 @@ import {
   Stethoscope, ShieldCheck, MapPin, Camera, 
   ArrowRight, ArrowLeft, CheckCircle2, Info, Navigation
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../../api';
 
 const services = [
   { id: 'Water Testing', name: 'Water Testing', desc: 'pH, Salinity, Ammonia & Nitrate testing', icon: '🧪' },
@@ -32,7 +32,7 @@ const Consultation = () => {
   const fetchDoctors = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/doctors');
+      const { data } = await api.get('/api/doctors');
       setDoctors(data);
     } catch (error) {
       toast.error('Failed to load doctors');
@@ -77,7 +77,7 @@ const Consultation = () => {
         travelCost: formData.distance * selectedDoctor.fees.perKmCharge,
         totalCost: calculateTotal()
       };
-      await axios.post('/api/doctors/book', bookingData);
+      await api.post('/api/doctors/book', bookingData);
       toast.success('Consultation Request Sent!');
       setStep(6);
     } catch (error) {

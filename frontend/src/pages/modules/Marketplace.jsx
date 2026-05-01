@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
@@ -39,7 +39,7 @@ const Marketplace = () => {
   const fetchListings = async () => {
     setLoadingListings(true);
     try {
-      const { data } = await axios.get('/api/listings');
+      const { data } = await api.get('/api/listings');
       setListings(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error('Failed to load listings');
@@ -52,7 +52,7 @@ const Marketplace = () => {
   const fetchTrends = async () => {
     setLoadingAnalysis(true);
     try {
-      const { data } = await axios.get(`/api/market/trends?type=${category}&count=${count}`);
+      const { data } = await api.get(`/api/market/trends?type=${category}&count=${count}`);
       setTrendData(data);
     } catch (err) {
       toast.error('Failed to load trends');

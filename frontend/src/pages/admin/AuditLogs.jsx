@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { 
   History, ShieldCheck, User, MapPin, 
@@ -17,7 +17,7 @@ const AuditLogs = () => {
 
   const fetchLogs = async () => {
     try {
-      const { data } = await axios.get('/api/admin/logs'); // Need to implement this route
+      const { data } = await api.get('/api/admin/logs'); // Need to implement this route
       setLogs(data);
     } catch (error) {
       toast.error('Failed to load audit logs');

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import toast from 'react-hot-toast';
 import { Stethoscope, Plus, Trash2, ShieldCheck, DollarSign } from 'lucide-react';
 
@@ -57,7 +57,7 @@ const DoctorRegister = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/doctors/register', formData);
+      await api.post('/api/doctors/register', formData);
       toast.success('Registration submitted! Awaiting Admin approval.');
       navigate('/login');
     } catch (error) {

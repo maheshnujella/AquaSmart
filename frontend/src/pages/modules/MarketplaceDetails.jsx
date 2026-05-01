@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 import toast from 'react-hot-toast';
 import { 
   ArrowLeft, TrendingUp, TrendingDown, 
@@ -21,7 +21,7 @@ const MarketplaceDetails = () => {
 
   const fetchDetails = async () => {
     try {
-      const { data } = await axios.get(`/api/market/prices/${id}`);
+      const { data } = await api.get(`/api/market/prices/${id}`);
       setData(data);
     } catch (err) {
       toast.error('Failed to load product details');
