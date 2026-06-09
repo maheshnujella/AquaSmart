@@ -51,6 +51,7 @@ const Navbar = () => {
                   { name: 'Consultation', path: '/consultation' },
                   { name: 'Repair', path: '/repair' },
                   { name: 'Market', path: '/marketplace' },
+                  { name: 'Smart Tools', path: '/tools' },
                   { name: 'My Orders', path: '/orders' },
                 ].map((item) => (
                   <Link

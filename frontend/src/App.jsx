@@ -25,6 +25,7 @@ import Orders            from './pages/modules/Orders';
 import OrderTracking     from './pages/modules/OrderTracking';
 import Checkout          from './pages/modules/Checkout';
 import Profile           from './pages/Profile';
+import SmartTools        from './pages/modules/SmartTools';
 
 // Admin pages
 import AdminDashboard    from './pages/admin/AdminDashboard';
@@ -108,6 +109,7 @@ function App() {
             <Route path="/orders/:id/track"  element={<OrderTracking />} />
             <Route path="/checkout"          element={<Checkout />} />
             <Route path="/profile"           element={<Profile />} />
+            <Route path="/tools"             element={<SmartTools />} />
 
             {/* Doctor */}
             <Route path="/doctor/dashboard" element={<DoctorDashboard />} />

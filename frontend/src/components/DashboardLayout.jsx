@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
+import AquaBot from './AquaBot';
 import { ShoppingBag, HeartPulse, Stethoscope, Wrench, Store, Fuel, Menu, X, LayoutDashboard } from 'lucide-react';
 
 const SidebarItem = ({ icon, text, path, active }) => (
@@ -20,6 +21,7 @@ const DashboardLayout = () => {
       <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
         <Outlet />
       </main>
+      <AquaBot />
     </div>
   );
 };

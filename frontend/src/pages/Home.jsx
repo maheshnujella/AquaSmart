@@ -5,9 +5,10 @@ const modules = [
   { name: 'Product Ordering', icon: <ShoppingBag className="w-6 h-6" />, desc: 'Feed, Minerals, Medicines, Oil & Diesel', path: '/feed', color: 'from-blue-500 to-cyan-400' },
   { name: 'Doctor Consultation', icon: <Stethoscope className="w-6 h-6" />, desc: 'Water testing, Soil testing, Field visit', path: '/consultation', color: 'from-emerald-500 to-teal-400' },
   { name: 'Repair Services', icon: <Wrench className="w-6 h-6" />, desc: 'Generator, Fan sets, Electrical repair', path: '/repair', color: 'from-orange-500 to-amber-400' },
-  { name: 'Marketplace', icon: <Store className="w-6 h-6" />, desc: 'Buy & Sell aquaculture products', path: '/market', color: 'from-purple-500 to-indigo-400' },
+  { name: 'Marketplace', icon: <Store className="w-6 h-6" />, desc: 'Buy & Sell aquaculture products', path: '/marketplace', color: 'from-purple-500 to-indigo-400' },
+  { name: 'Smart Tools & Calculators', icon: <TrendingUp className="w-6 h-6" />, desc: 'Pond logs, feed calculations & risk charts', path: '/tools', color: 'from-teal-500 to-emerald-400' },
   { name: 'Delivery System', icon: <Zap className="w-6 h-6" />, desc: 'Swiggy-like live tracking & OTP', path: '/orders', color: 'from-rose-500 to-pink-400' },
-  { name: 'Live Tracking', icon: <TrendingUp className="w-6 h-6" />, desc: 'Real-time order tracking & updates', path: '/tracking', color: 'from-blue-600 to-indigo-500' },
+  { name: 'Live Tracking', icon: <TrendingUp className="w-6 h-6" />, desc: 'Real-time order tracking & updates', path: '/orders', color: 'from-blue-600 to-indigo-500' },
 ];
 
 const Home = () => {
@@ -34,7 +35,7 @@ const Home = () => {
               <Link to="/register" className="btn-primary">
                 Get Started Free
               </Link>
-              <Link to="/feed" className="px-8 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm">
+              <Link to="/feed" className="px-8 py-3 bg-white/80 backdrop-blur border border-slate-200/50 text-slate-700 font-bold rounded-xl hover:bg-white hover:text-blue-600 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300">
                 Explore Marketplace
               </Link>
             </div>
@@ -47,13 +48,13 @@ const Home = () => {
                alt="Aquaculture" 
                className="rounded-3xl shadow-2xl border-8 border-white object-cover w-full h-[500px]"
              />
-             <div className="absolute -bottom-6 -left-6 glass-card p-6 flex items-center gap-4 animate-float">
-                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6" />
+             <div className="absolute -bottom-6 -left-6 glass-card p-6 flex items-center gap-4 animate-float group hover:scale-105 cursor-pointer">
+                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-colors duration-300">
+                  <TrendingUp className="w-6 h-6 group-hover:animate-pulse-soft" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Daily Market Price</p>
-                  <p className="text-lg font-bold text-slate-900">₹450/kg <span className="text-green-500 text-sm">↑ 12%</span></p>
+                  <p className="text-xs text-slate-500 font-medium group-hover:text-blue-500 transition-colors">Daily Market Price</p>
+                  <p className="text-lg font-bold text-slate-900 group-hover:text-slate-800">₹450/kg <span className="text-green-500 text-sm group-hover:text-green-600">↑ 12%</span></p>
                 </div>
              </div>
           </div>
@@ -69,7 +70,12 @@ const Home = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {modules.map((mod, index) => (
-            <Link to={mod.path} key={index} className="group glass-card p-8 flex flex-col items-start text-left">
+            <Link 
+              to={mod.path} 
+              key={index} 
+              className="group glass-card p-8 flex flex-col items-start text-left animate-fade-in-up opacity-0"
+              style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+            >
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${mod.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 mb-6`}>
                 {mod.icon}
               </div>
