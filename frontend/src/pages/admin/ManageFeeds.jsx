@@ -79,9 +79,9 @@ const ManageFeeds = () => {
       const payload = {
         name:               form.name,
         subCategory:        selectedSubcat?.name || form.subCategory,
-        description:        form.description,
-        price:              form.price,
-        stock:              form.stock,
+        description:        form.description || 'No description provided',
+        price:              Number(form.price) || 0,
+        stock:              form.stock ? Number(form.stock) : 0,
         image:              form.image,
         company:            form.companyId || undefined,
         feedSubcategory:    form.feedSubcategoryId || undefined,
@@ -242,7 +242,7 @@ const ManageFeeds = () => {
                 <tr key={f._id} className="hover:bg-slate-50 transition">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      {f.image && <img src={f.image} alt={f.name} className="w-8 h-8 rounded-lg object-cover" onError={e => { e.target.style.display='none'; }} />}
+                      {f.image && <img src={f.image.startsWith('http') || f.image.startsWith('data:') ? f.image : `${api.defaults.baseURL || 'https://aquasmart-ilif.onrender.com'}${f.image.startsWith('/') ? '' : '/'}${f.image}`} alt={f.name} className="w-8 h-8 rounded-lg object-cover" onError={e => { e.target.style.display='none'; }} />}
                       <span className="font-bold text-slate-900">{f.name}</span>
                     </div>
                   </td>

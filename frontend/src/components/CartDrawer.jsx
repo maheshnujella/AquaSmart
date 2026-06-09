@@ -64,7 +64,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                 <div key={itemId} className="flex gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
                   <div className="w-16 h-16 rounded-xl bg-white border border-slate-100 overflow-hidden flex-shrink-0">
                     {item.image
-                      ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                      ? <img src={item.image.startsWith('http') || item.image.startsWith('data:') ? item.image : `https://aquasmart-ilif.onrender.com${item.image.startsWith('/') ? '' : '/'}${item.image}`} alt={item.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                       : <ShoppingCart className="w-7 h-7 text-slate-300 m-auto mt-4" />
                     }
                   </div>

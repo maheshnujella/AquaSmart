@@ -35,11 +35,17 @@ const ManageMedicines = () => {
     e.preventDefault();
     try {
       setSaving(true);
+      
+      const payload = { ...form };
+      if (!payload.description) payload.description = 'No description provided';
+      if (!payload.stock) payload.stock = 0;
+      payload.price = Number(payload.price) || 0;
+
       if (editId) {
-        await api.put(`/api/admin/medicines/${editId}`, form);
+        await api.put(`/api/admin/medicines/${editId}`, payload);
         toast.success('Medicine updated!');
       } else {
-        await api.post('/api/admin/medicines', form);
+        await api.post('/api/admin/medicines', payload);
         toast.success('Medicine added!');
       }
       setShowForm(false);

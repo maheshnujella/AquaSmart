@@ -36,33 +36,39 @@ const Medicine = () => {
     return matchSearch && matchFilter;
   });
 
+  const getImageUrl = (url) => {
+    if (!url) return FALLBACK_IMAGE;
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return `${api.defaults.baseURL || 'https://aquasmart-ilif.onrender.com'}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
   return (
     <div className="space-y-8 pb-16">
       {/* Header */}
       <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h1 className="text-4xl font-black text-slate-900 flex items-center gap-3">
-            💊 Aqua Medicine & Minerals
+            🧪 Medicine & Minerals
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Treatments, probiotics, and mineral supplements</p>
+          <p className="text-slate-500 font-medium mt-1">Essential treatments for your aquaculture</p>
         </div>
         <div className="flex gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:flex-none">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search medicine..."
+              placeholder="Search medicines..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full md:w-64 pl-10 pr-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full md:w-64 pl-10 pr-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
           </div>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
+            className="border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
           >
-            <option value="All">All Types</option>
+            <option value="All">All Categories</option>
             <option value="Fish Medicine">Fish Medicine</option>
             <option value="Water Treatment">Water Treatment</option>
             <option value="Minerals">Minerals</option>
@@ -70,15 +76,14 @@ const Medicine = () => {
         </div>
       </div>
 
-      {/* Loading State */}
+      {/* States */}
       {loading && (
         <div className="flex flex-col items-center justify-center min-h-[300px]">
-          <Loader2 className="w-10 h-10 text-green-600 animate-spin" />
+          <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
           <p className="text-slate-500 font-medium mt-4">Loading medicines...</p>
         </div>
       )}
 
-      {/* Error State */}
       {error && !loading && (
         <div className="bg-red-50 border border-red-100 rounded-[32px] p-10 flex flex-col items-center gap-4 text-center">
           <AlertCircle className="w-10 h-10 text-red-400" />
@@ -92,13 +97,12 @@ const Medicine = () => {
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && !error && products.length === 0 && (
         <div className="bg-white rounded-[40px] border-2 border-dashed border-slate-100 p-20 flex flex-col items-center gap-4">
           <Package className="w-16 h-16 text-slate-200" />
-          <p className="text-slate-400 font-black text-xl">No medicine products available</p>
+          <p className="text-slate-400 font-black text-xl">No medicines available</p>
           <p className="text-slate-400 font-medium text-sm text-center max-w-xs">
-            The admin hasn't added any medicine products yet.
+            The admin hasn't added any medicines or minerals yet. Check back soon.
           </p>
         </div>
       )}
@@ -113,7 +117,7 @@ const Medicine = () => {
             >
               <div className="relative h-48 bg-slate-100 overflow-hidden">
                 <img
-                  src={product.image || FALLBACK_IMAGE}
+                  src={getImageUrl(product.image)}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   onError={(e) => { e.target.src = FALLBACK_IMAGE; }}

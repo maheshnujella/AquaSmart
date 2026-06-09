@@ -34,8 +34,7 @@ const productSchema = new mongoose.Schema({
     type: String, // denormalized for quick display
   },
   description: {
-    type: String,
-    required: [true, 'Please add a description']
+    type: String
   },
   price: {
     type: Number,

@@ -94,13 +94,19 @@ const ManageProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    
+    const payload = { ...formData };
+    if (!payload.description) payload.description = 'No description provided';
+    if (!payload.stock) payload.stock = 0;
+    payload.price = Number(payload.price) || 0;
+
     try {
       if (isEditing) {
-        const { data } = await api.put(`/api/products/${editId}`, formData);
+        const { data } = await api.put(`/api/products/${editId}`, payload);
         setProducts((prev) => prev.map((p) => (p._id === editId ? data : p)));
         toast.success('Product updated!');
       } else {
-        const { data } = await api.post('/api/products', formData);
+        const { data } = await api.post('/api/products', payload);
         setProducts((prev) => [data, ...prev]);
         toast.success('Product added!');
       }
@@ -229,7 +235,7 @@ const ManageProducts = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
                           {prod.image
-                            ? <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
+                            ? <img src={prod.image.startsWith('http') || prod.image.startsWith('data:') ? prod.image : `${api.defaults.baseURL || 'https://aquasmart-ilif.onrender.com'}${prod.image.startsWith('/') ? '' : '/'}${prod.image}`} alt={prod.name} className="w-full h-full object-cover" />
                             : <Package className="w-5 h-5 text-slate-400 m-auto mt-2.5" />
                           }
                         </div>

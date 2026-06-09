@@ -51,7 +51,7 @@ router.post('/', protect, authorize('Admin'), async (req, res) => {
       price,
       category,
       subCategory: subCategory || '',
-      stock: stock !== undefined ? stock : 0,
+      stock: stock ? Number(stock) : 0,
       description: description || '',
       image: image || '',
       user: req.user._id,
@@ -87,7 +87,7 @@ router.put('/:id', protect, authorize('Admin'), async (req, res) => {
     product.image       = image       || product.image;
     product.category    = category    || product.category;
     product.subCategory = subCategory || product.subCategory;
-    product.stock       = stock !== undefined ? stock : product.stock;
+    product.stock       = stock !== undefined && stock !== '' ? Number(stock) : product.stock;
 
     const updatedProduct = await product.save();
 

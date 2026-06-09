@@ -168,7 +168,7 @@ router.post('/feeds', async (req, res) => {
       subCategory: subCategory || '',
       description: description || '',
       price: Number(price),
-      stock: stock !== undefined ? Number(stock) : 0,
+      stock: stock ? Number(stock) : 0,
       image: image || '',
       user: req.user._id,
     });
@@ -191,8 +191,8 @@ router.put('/feeds/:id', async (req, res) => {
     if (name)        feed.name        = name;
     if (subCategory) feed.subCategory = subCategory;
     if (description) feed.description = description;
-    if (price !== undefined) feed.price = Number(price);
-    if (stock !== undefined) feed.stock = Number(stock);
+    if (price !== undefined && price !== '') feed.price = Number(price);
+    if (stock !== undefined && stock !== '') feed.stock = Number(stock);
     if (image)       feed.image       = image;
 
     const updated = await feed.save();
@@ -244,7 +244,7 @@ router.post('/medicines', async (req, res) => {
       subCategory: subCategory || '',
       description: description || '',
       price: Number(price),
-      stock: stock !== undefined ? Number(stock) : 0,
+      stock: stock ? Number(stock) : 0,
       image: image || '',
       user: req.user._id,
     });
@@ -267,8 +267,8 @@ router.put('/medicines/:id', async (req, res) => {
     if (name)        medicine.name        = name;
     if (subCategory) medicine.subCategory = subCategory;
     if (description) medicine.description = description;
-    if (price !== undefined) medicine.price = Number(price);
-    if (stock !== undefined) medicine.stock = Number(stock);
+    if (price !== undefined && price !== '') medicine.price = Number(price);
+    if (stock !== undefined && stock !== '') medicine.stock = Number(stock);
     if (image)       medicine.image       = image;
 
     const updated = await medicine.save();

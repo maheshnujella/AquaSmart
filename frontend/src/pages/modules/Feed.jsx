@@ -36,6 +36,12 @@ const Feed = () => {
     return matchSearch && matchFilter;
   });
 
+  const getImageUrl = (url) => {
+    if (!url) return FALLBACK_IMAGE;
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return `${api.defaults.baseURL || 'https://aquasmart-ilif.onrender.com'}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
   return (
     <div className="space-y-8 pb-16">
       {/* Header */}
@@ -111,7 +117,7 @@ const Feed = () => {
             >
               <div className="relative h-48 bg-slate-100 overflow-hidden">
                 <img
-                  src={product.image || FALLBACK_IMAGE}
+                  src={getImageUrl(product.image)}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
