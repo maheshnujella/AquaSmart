@@ -38,24 +38,23 @@ const ManageProducts = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const uploadImage = async (e) => {
+  const uploadImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setImagePreview(URL.createObjectURL(file));
-    const uploadData = new FormData();
-    uploadData.append('image', file);
     setUploading(true);
-    try {
-      const { data } = await api.post('/api/upload', uploadData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setFormData((prev) => ({ ...prev, image: data }));
-      toast.success('Image uploaded');
-    } catch {
-      toast.error('Image upload failed');
-    } finally {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result;
+      setImagePreview(base64);
+      setFormData((prev) => ({ ...prev, image: base64 }));
       setUploading(false);
-    }
+      toast.success('Image ready');
+    };
+    reader.onerror = () => {
+      toast.error('Failed to read image');
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleEdit = (prod) => {
