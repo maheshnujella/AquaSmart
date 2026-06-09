@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, X, Loader2, FlaskConical } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Loader2, FlaskConical, Upload } from 'lucide-react';
 
 const EMPTY = { name: '', subCategory: '', description: '', price: '', stock: '', image: '' };
 
@@ -13,6 +13,27 @@ const ManageMedicines = () => {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY);
+  const [uploading, setUploading]   = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const uploadImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result;
+      setImagePreview(base64);
+      setForm((prev) => ({ ...prev, image: base64 }));
+      setUploading(false);
+      toast.success('Image ready');
+    };
+    reader.onerror = () => {
+      toast.error('Failed to read image');
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const fetchItems = async () => {
     try {
@@ -28,8 +49,8 @@ const ManageMedicines = () => {
 
   useEffect(() => { fetchItems(); }, []);
 
-  const openAdd = () => { setForm(EMPTY); setEditId(null); setShowForm(true); };
-  const openEdit = (m) => { setForm({ name: m.name, subCategory: m.subCategory || '', description: m.description || '', price: m.price, stock: m.stock, image: m.image || '' }); setEditId(m._id); setShowForm(true); };
+  const openAdd = () => { setForm(EMPTY); setEditId(null); setImagePreview(null); setShowForm(true); };
+  const openEdit = (m) => { setForm({ name: m.name, subCategory: m.subCategory || '', description: m.description || '', price: m.price, stock: m.stock, image: m.image || '' }); setEditId(m._id); setImagePreview(m.image || null); setShowForm(true); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,13 +109,23 @@ const ManageMedicines = () => {
               <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600"><X size={22} /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {[['name','Medicine Name','text',true],['subCategory','Category (e.g. Mineral, Supplement, Treatment)','text',false],['description','Description / Usage','text',false],['price','Price (₹)','number',true],['stock','Stock Qty','number',false],['image','Image URL','text',false]].map(([key, label, type, req]) => (
+              {[['name','Medicine Name','text',true],['subCategory','Category (e.g. Mineral, Supplement, Treatment)','text',false],['description','Description / Usage','text',false],['price','Price (₹)','number',true],['stock','Stock Qty','number',false]].map(([key, label, type, req]) => (
                 <div key={key}>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{label}</label>
                   <input type={type} value={form[key]} onChange={e => setForm({...form, [key]: e.target.value})} required={req}
                     className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500" />
                 </div>
               ))}
+
+              {/* Image Upload */}
+              <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 bg-slate-50 text-center">
+                <Upload className="w-6 h-6 text-purple-500 mx-auto mb-2" />
+                <p className="text-xs text-slate-500 mb-2">Upload medicine image</p>
+                <input type="file" onChange={uploadImage} accept="image/*"
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100" />
+                {uploading && <p className="text-xs text-purple-600 mt-2 flex items-center justify-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Reading...</p>}
+                {imagePreview && <img src={imagePreview} alt="Preview" className="h-20 object-contain rounded-lg border border-slate-200 mt-3 mx-auto" />}
+              </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-slate-200 text-slate-600 py-2.5 rounded-xl font-bold hover:bg-slate-50 transition">Cancel</button>
                 <button type="submit" disabled={saving} className="flex-1 bg-purple-600 text-white py-2.5 rounded-xl font-bold hover:bg-purple-700 transition flex items-center justify-center gap-2">
@@ -122,7 +153,14 @@ const ManageMedicines = () => {
             <tbody className="divide-y divide-slate-50">
               {items.map(m => (
                 <tr key={m._id} className="hover:bg-slate-50 transition">
-                  <td className="px-6 py-4 font-bold text-slate-900">{m.name}</td>
+                  <td className="px-6 py-4 font-bold text-slate-900 flex items-center gap-3">
+                    {m.image ? (
+                      <img src={m.image.startsWith('http') || m.image.startsWith('data:') ? m.image : `${api.defaults.baseURL || 'https://aquasmart-ilif.onrender.com'}${m.image.startsWith('/') ? '' : '/'}${m.image}`} alt={m.name} className="w-8 h-8 rounded-lg object-cover" onError={e => { e.target.style.display='none'; }} />
+                    ) : (
+                      <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600"><FlaskConical className="w-4 h-4" /></div>
+                    )}
+                    <span>{m.name}</span>
+                  </td>
                   <td className="px-6 py-4 text-slate-600">{m.subCategory || '—'}</td>
                   <td className="px-6 py-4 font-bold text-green-700">₹{m.price}</td>
                   <td className="px-6 py-4 text-slate-600">{m.stock}</td>

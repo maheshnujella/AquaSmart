@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, X, Loader2, Fish, Factory, Tag } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Loader2, Fish, Factory, Tag, Upload } from 'lucide-react';
 
 const EMPTY = { name: '', subCategory: '', description: '', price: '', stock: '', image: '', companyId: '', feedSubcategoryId: '' };
 
@@ -16,6 +16,27 @@ const ManageFeeds = () => {
   const [editId, setEditId]         = useState(null);
   const [form, setForm]             = useState(EMPTY);
   const [filterCompany, setFilterCompany] = useState('');
+  const [uploading, setUploading]   = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const uploadImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result;
+      setImagePreview(base64);
+      setForm((prev) => ({ ...prev, image: base64 }));
+      setUploading(false);
+      toast.success('Image ready');
+    };
+    reader.onerror = () => {
+      toast.error('Failed to read image');
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const fetchAll = async () => {
     setLoading(true);
@@ -46,6 +67,7 @@ const ManageFeeds = () => {
     setForm(EMPTY);
     setSubcats([]);
     setEditId(null);
+    setImagePreview(null);
     setShowForm(true);
   };
 
@@ -62,6 +84,7 @@ const ManageFeeds = () => {
       feedSubcategoryId: f.feedSubcategory?._id || f.feedSubcategory || '',
     });
     setEditId(f._id);
+    setImagePreview(f.image || null);
     setShowForm(true);
     if (companyId) {
       api.get(`/api/admin/feed-subcategories?company=${companyId}`)
@@ -194,7 +217,6 @@ const ManageFeeds = () => {
                 ['description', 'Description', 'text', false],
                 ['price', 'Price (₹)', 'number', true],
                 ['stock', 'Stock Qty', 'number', false],
-                ['image', 'Image URL', 'text', false],
               ].map(([key, label, type, req]) => (
                 <div key={key}>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{label}</label>
@@ -207,6 +229,16 @@ const ManageFeeds = () => {
                   />
                 </div>
               ))}
+
+              {/* Image Upload */}
+              <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 bg-slate-50 text-center">
+                <Upload className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+                <p className="text-xs text-slate-500 mb-2">Upload feed image</p>
+                <input type="file" onChange={uploadImage} accept="image/*"
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                {uploading && <p className="text-xs text-blue-600 mt-2 flex items-center justify-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Reading...</p>}
+                {imagePreview && <img src={imagePreview} alt="Preview" className="h-20 object-contain rounded-lg border border-slate-200 mt-3 mx-auto" />}
+              </div>
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-slate-200 text-slate-600 py-2.5 rounded-xl font-bold hover:bg-slate-50 transition">Cancel</button>
