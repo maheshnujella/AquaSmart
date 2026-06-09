@@ -8,6 +8,7 @@ const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1611532736597-de2d4265
 
 const Feed = () => {
   const [products, setProducts] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
@@ -15,19 +16,23 @@ const Feed = () => {
   const { addToCart } = useContext(CartContext);
 
   useEffect(() => {
-    const fetchFeed = async () => {
+    const fetchFeedAndCompanies = async () => {
       setLoading(true);
       setError(null);
       try {
-        const { data } = await api.get('/api/products?category=Feed');
-        setProducts(Array.isArray(data) ? data : []);
+        const [prodRes, compRes] = await Promise.all([
+          api.get('/api/products?category=Feed'),
+          api.get('/api/products/feed-companies')
+        ]);
+        setProducts(Array.isArray(prodRes.data) ? prodRes.data : []);
+        setCompanies(Array.isArray(compRes.data) ? compRes.data : []);
       } catch (err) {
         setError('Failed to load feed products. Please try again.');
       } finally {
         setLoading(false);
       }
     };
-    fetchFeed();
+    fetchFeedAndCompanies();
   }, []);
 
   const filtered = products.filter((p) => {
@@ -70,8 +75,13 @@ const Feed = () => {
             className="border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
           >
             <option value="All">All Feed</option>
-            <option value="Vanami Feed">Vanami Feed</option>
-            <option value="Sadhya Feed">Sadhya Feed</option>
+            {companies.length > 0 ? (
+              companies.map(c => (
+                <option key={c._id} value={`${c.name} Feed`}>{c.name} Feed</option>
+              ))
+            ) : (
+              <><option value="Vanami Feed">Vanami Feed</option><option value="Sadhya Feed">Sadhya Feed</option></>
+            )}
           </select>
         </div>
       </div>

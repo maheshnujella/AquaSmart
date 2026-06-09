@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const Log = require('../models/Log');
+const FeedCompany = require('../models/FeedCompany');
 const { protect, authorize } = require('../middleware/auth');
 
 // @desc    Get all products (optionally filter by category)
@@ -16,6 +17,19 @@ router.get('/', async (req, res) => {
     res.json(products);
   } catch (error) {
     console.error('[PRODUCTS] GET / error:', error.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Get all feed companies (for public filters)
+// @route   GET /api/products/feed-companies
+// @access  Public
+router.get('/feed-companies', async (req, res) => {
+  try {
+    const companies = await FeedCompany.find({}).sort({ name: 1 });
+    res.json(companies);
+  } catch (error) {
+    console.error('[PRODUCTS] GET /feed-companies error:', error.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

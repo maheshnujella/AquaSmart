@@ -10,6 +10,7 @@ const EMPTY_FORM = {
 
 const ManageProducts = () => {
   const [products, setProducts] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(null);
@@ -32,7 +33,33 @@ const ManageProducts = () => {
     }
   };
 
-  useEffect(() => { fetchProducts(); }, []);
+  const fetchCompanies = async () => {
+    try {
+      const { data } = await api.get('/api/products/feed-companies');
+      setCompanies(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load companies', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCompanies();
+  }, []);
+
+  useEffect(() => {
+    if (formData.category === 'Feed' && companies.length > 0) {
+      const companyFeedNames = companies.map(c => `${c.name} Feed`);
+      if (!companyFeedNames.includes(formData.subCategory)) {
+        setFormData(prev => ({ ...prev, subCategory: companyFeedNames[0] }));
+      }
+    } else if (formData.category === 'Medicine') {
+      const medSubCategories = ['Fish Medicine', 'Water Treatment', 'Minerals'];
+      if (!medSubCategories.includes(formData.subCategory)) {
+        setFormData(prev => ({ ...prev, subCategory: medSubCategories[0] }));
+      }
+    }
+  }, [formData.category, companies]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -168,7 +195,13 @@ const ManageProducts = () => {
               <select name="subCategory" value={formData.subCategory} onChange={handleChange}
                 className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
                 {formData.category === 'Feed' ? (
-                  <><option value="Vanami Feed">Vanami Feed</option><option value="Sadhya Feed">Sadhya Feed</option></>
+                  companies.length > 0 ? (
+                    companies.map(c => (
+                      <option key={c._id} value={`${c.name} Feed`}>{c.name} Feed</option>
+                    ))
+                  ) : (
+                    <><option value="Vanami Feed">Vanami Feed</option><option value="Sadhya Feed">Sadhya Feed</option></>
+                  )
                 ) : (
                   <><option value="Fish Medicine">Fish Medicine</option><option value="Water Treatment">Water Treatment</option><option value="Minerals">Minerals</option></>
                 )}
