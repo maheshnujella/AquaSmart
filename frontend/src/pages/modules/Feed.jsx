@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { ShoppingCart, Search, Loader2, Package, AlertCircle } from 'lucide-react';
 import { CartContext } from '../../context/CartContext';
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=400&q=80';
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?auto=format&fit=crop&w=400&q=80';
 
 const Feed = () => {
   const [products, setProducts] = useState([]);

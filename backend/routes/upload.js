@@ -1,51 +1,38 @@
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const router = express.Router();
-const fs = require('fs');
+const multer  = require('multer');
+const router  = express.Router();
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename(req, file, cb) {
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-    );
-  },
+// ─── Configure Cloudinary ─────────────────────────────────────────────────────
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-function checkFileType(file, cb) {
-  const filetypes = /jpg|jpeg|png|webp/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    return cb(null, true);
-  } else {
-    cb('Images only!');
-  }
-}
+// ─── Multer → Cloudinary storage ─────────────────────────────────────────────
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder:         'aquasmart',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto' }],
+  },
+});
 
 const upload = multer({
   storage,
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
-  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
 });
 
+// ─── POST /api/upload ─────────────────────────────────────────────────────────
 router.post('/', upload.single('image'), (req, res) => {
   if (!req.file) {
-    return res.status(400).send('No image uploaded');
+    return res.status(400).json({ success: false, message: 'No image uploaded' });
   }
-  res.send(`/${req.file.path.replace(/\\/g, '/')}`);
+  // Return the permanent Cloudinary URL (https://res.cloudinary.com/...)
+  res.send(req.file.path);
 });
 
 module.exports = router;
