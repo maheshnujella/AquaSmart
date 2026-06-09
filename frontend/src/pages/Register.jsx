@@ -9,6 +9,7 @@ const ROLES = [
   { value: 'Shopkeeper', label: '🏪 Shopkeeper' },
   { value: 'Delivery', label: '🚚 Delivery Agent' },
   { value: 'Doctor', label: '👨‍⚕️ Aqua Doctor' },
+  { value: 'Repair', label: '🔧 Repair Boy' },
 ];
 
 const passwordRules = [
@@ -62,6 +63,9 @@ const Register = () => {
       const userRole = res.data?.user?.role || res.data?.role;
       if (userRole === 'Admin') navigate('/admin');
       else if (userRole === 'Doctor') navigate('/doctor/dashboard');
+      else if (userRole === 'Delivery') navigate('/delivery/dashboard');
+      else if (userRole === 'Shopkeeper') navigate('/shopkeeper/dashboard');
+      else if (userRole === 'Repair') navigate('/repair/dashboard');
       else navigate('/');
     } catch (err) {
       console.error('[REGISTER ERROR]', err);

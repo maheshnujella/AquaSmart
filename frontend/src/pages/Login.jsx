@@ -33,6 +33,9 @@ const Login = () => {
       // ✅ Role-based redirect
       if (userData.role === 'Admin') navigate('/admin');
       else if (userData.role === 'Doctor') navigate('/doctor/dashboard');
+      else if (userData.role === 'Delivery') navigate('/delivery/dashboard');
+      else if (userData.role === 'Shopkeeper') navigate('/shopkeeper/dashboard');
+      else if (userData.role === 'Repair') navigate('/repair/dashboard');
       else navigate('/');
 
     } catch (err) {

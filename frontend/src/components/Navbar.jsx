@@ -125,6 +125,11 @@ const Navbar = () => {
                         <MapPin className="w-4 h-4" /> Shopkeeper Dashboard
                       </Link>
                     )}
+                    {user.role === 'Repair' && (
+                      <Link to="/repair/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                        <MapPin className="w-4 h-4" /> Repair Dashboard
+                      </Link>
+                    )}
                     <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors mt-1">
                       <LogOut className="w-4 h-4" /> Logout
                     </button>

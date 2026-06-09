@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['Customer', 'Admin', 'Shopkeeper', 'Delivery', 'Doctor'],
+    enum: ['Customer', 'Admin', 'Shopkeeper', 'Delivery', 'Doctor', 'Repair'],
     default: 'Customer'
   },
   // Shopkeeper Specific Fields
@@ -34,6 +34,8 @@ const userSchema = new mongoose.Schema({
   shopImage: String,
   shopLocation: {
     address: String,
+    latitude: Number,
+    longitude: Number,
     coordinates: {
       lat: Number,
       lng: Number

@@ -54,7 +54,7 @@ const getNearbyRepairRequests = async (req, res) => {
       return res.status(400).json({ message: 'Provider location not set' });
     }
 
-    const requests = await RepairRequest.find({ status: 'Pending' });
+    const requests = await RepairRequest.find({ status: 'Pending' }).populate('customer', 'name phone email');
     
     // Calculate distance for each request
     const nearbyRequests = requests.map(request => {
@@ -120,9 +120,24 @@ const updateRepairStatus = async (req, res) => {
   }
 };
 
+// @desc    Get provider's accepted/completed jobs
+// @route   GET /api/repair/my-jobs
+// @access  Private/Provider
+const getProviderJobs = async (req, res) => {
+  try {
+    const jobs = await RepairRequest.find({ provider: req.user._id })
+      .populate('customer', 'name phone email')
+      .sort({ createdAt: -1 });
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   createRepairRequest,
   getNearbyRepairRequests,
   acceptRepairRequest,
-  updateRepairStatus
+  updateRepairStatus,
+  getProviderJobs
 };

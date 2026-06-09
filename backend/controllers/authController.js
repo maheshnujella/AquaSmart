@@ -334,13 +334,24 @@ const updateUserProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const { name, email, phone, cultureType, shopName, profilePhoto } = req.body;
+    const { name, email, phone, cultureType, shopName, profilePhoto, shopLocation } = req.body;
     if (name) user.name = name.trim();
     if (email) user.email = email.toLowerCase().trim();
     if (phone) user.phone = phone.trim();
     if (cultureType) user.cultureType = cultureType;
     if (shopName) user.shopName = shopName;
     if (profilePhoto) user.profilePhoto = profilePhoto;
+    if (shopLocation) {
+      user.shopLocation = {
+        address: shopLocation.address || (user.shopLocation ? user.shopLocation.address : ''),
+        latitude: shopLocation.latitude,
+        longitude: shopLocation.longitude,
+        coordinates: {
+          lat: shopLocation.latitude,
+          lng: shopLocation.longitude
+        }
+      };
+    }
 
     const updatedUser = await user.save();
     return res.json({ success: true, user: updatedUser });

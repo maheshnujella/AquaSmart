@@ -4,7 +4,8 @@ const {
   createRepairRequest,
   getNearbyRepairRequests,
   acceptRepairRequest,
-  updateRepairStatus
+  updateRepairStatus,
+  getProviderJobs
 } = require('../controllers/repairController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -12,8 +13,9 @@ const { protect, authorize } = require('../middleware/auth');
 router.post('/requests', protect, authorize('Customer', 'Admin'), createRepairRequest);
 
 // Provider routes (Shopkeeper / Repair Expert)
-router.get('/nearby', protect, authorize('Shopkeeper', 'Admin'), getNearbyRepairRequests);
-router.put('/requests/:id/accept', protect, authorize('Shopkeeper', 'Admin'), acceptRepairRequest);
-router.put('/requests/:id/status', protect, authorize('Shopkeeper', 'Admin'), updateRepairStatus);
+router.get('/nearby', protect, authorize('Shopkeeper', 'Admin', 'Repair'), getNearbyRepairRequests);
+router.get('/my-jobs', protect, authorize('Shopkeeper', 'Admin', 'Repair'), getProviderJobs);
+router.put('/requests/:id/accept', protect, authorize('Shopkeeper', 'Admin', 'Repair'), acceptRepairRequest);
+router.put('/requests/:id/status', protect, authorize('Shopkeeper', 'Admin', 'Repair'), updateRepairStatus);
 
 module.exports = router;

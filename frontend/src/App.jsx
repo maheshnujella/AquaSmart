@@ -39,6 +39,9 @@ import DeliveryDashboard from './pages/delivery/DeliveryDashboard';
 // Shopkeeper pages
 import ShopkeeperDashboard from './pages/shopkeeper/ShopkeeperDashboard';
 
+// Repair pages
+import RepairDashboard   from './pages/repair/RepairDashboard';
+
 // ── Role-based redirect after login ──────────────────────────────────────────
 const RoleRedirect = () => {
   const { user } = useAuth();
@@ -47,6 +50,7 @@ const RoleRedirect = () => {
   if (user.role === 'Doctor')     return <Navigate to="/doctor/dashboard"      replace />;
   if (user.role === 'Delivery')   return <Navigate to="/delivery/dashboard"    replace />;
   if (user.role === 'Shopkeeper') return <Navigate to="/shopkeeper/dashboard"  replace />;
+  if (user.role === 'Repair')     return <Navigate to="/repair/dashboard"      replace />;
   return <Navigate to="/" replace />;
 };
 
@@ -62,6 +66,13 @@ const ShopkeeperRoute = ({ children }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
   if (!['Shopkeeper', 'Admin'].includes(user.role)) return <Navigate to="/" replace />;
+  return children;
+};
+
+const RepairRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (!['Repair', 'Admin'].includes(user.role)) return <Navigate to="/" replace />;
   return children;
 };
 
@@ -118,6 +129,16 @@ function App() {
                 <ShopkeeperRoute>
                   <ShopkeeperDashboard />
                 </ShopkeeperRoute>
+              }
+            />
+
+            {/* Repair Boy */}
+            <Route
+              path="/repair/dashboard"
+              element={
+                <RepairRoute>
+                  <RepairDashboard />
+                </RepairRoute>
               }
             />
 
