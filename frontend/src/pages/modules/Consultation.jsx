@@ -24,6 +24,46 @@ const Consultation = () => {
     doctorId: '',
     distance: 0
   });
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    processFiles(files);
+  };
+
+  const handleFileInput = (e) => {
+    const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+    processFiles(files);
+  };
+
+  const processFiles = (files) => {
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, images: [...prev.images, reader.result] }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
 
   useEffect(() => {
     if (step === 4) fetchDoctors();
@@ -140,12 +180,41 @@ const Consultation = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
               ></textarea>
-              <div className="flex items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-10 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group">
-                 <div className="text-center space-y-2">
-                   <Camera className="w-10 h-10 text-slate-400 mx-auto group-hover:text-blue-500 group-hover:scale-110 transition-all" />
-                   <p className="text-sm font-semibold text-slate-500">Upload Farm Images</p>
+              <div 
+                className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-10 transition-colors cursor-pointer group ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                 <input 
+                   type="file" 
+                   multiple 
+                   accept="image/*" 
+                   onChange={handleFileInput} 
+                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                 />
+                 <div className="text-center space-y-2 pointer-events-none">
+                   <Camera className={`w-10 h-10 mx-auto transition-all ${isDragging ? 'text-blue-500 scale-110' : 'text-slate-400 group-hover:text-blue-500 group-hover:scale-110'}`} />
+                   <p className="text-sm font-semibold text-slate-600">Drag & Drop or <span className="text-blue-600">Browse Images</span></p>
+                   <p className="text-xs text-slate-400">Supports JPG, PNG</p>
                  </div>
               </div>
+
+              {formData.images.length > 0 && (
+                <div className="flex gap-4 flex-wrap mt-4">
+                  {formData.images.map((img, index) => (
+                    <div key={index} className="relative w-24 h-24 rounded-xl overflow-hidden shadow-sm border border-slate-200">
+                      <img src={img} alt={`upload-${index}`} className="w-full h-full object-cover" />
+                      <button 
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-red-600 transition"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-4">
                 <button onClick={handleBack} className="flex-1 px-6 py-4 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2">
                   <ArrowLeft className="w-5 h-5" /> Back
