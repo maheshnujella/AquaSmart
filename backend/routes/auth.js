@@ -9,6 +9,7 @@ const {
   updateUserProfile,
   forgotPassword,
   resetPassword,
+  verifyEmailOTP,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
@@ -26,6 +27,9 @@ const authLimiter = rateLimit({
 
 // ─── POST /api/auth/register ──────────────────────────────────────────────────
 router.post('/register', authLimiter, registerUser);
+
+// ─── POST /api/auth/verify-otp ────────────────────────────────────────────────
+router.post('/verify-otp', authLimiter, verifyEmailOTP);
 
 // ─── POST /api/auth/login ─────────────────────────────────────────────────────
 router.post('/login', authLimiter, loginUser);
