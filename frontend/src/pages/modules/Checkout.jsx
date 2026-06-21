@@ -65,7 +65,6 @@ const Checkout = () => {
       };
 
       const { data } = await api.post('/api/orders', orderPayload);
-      clearCart();
 
       if (paymentMethod === 'Online') {
         // Open UPI payment modal with the created orderId
@@ -74,6 +73,7 @@ const Checkout = () => {
         return;
       }
 
+      clearCart();
       toast.success('Order placed successfully! 🎉');
       navigate(`/orders/${data._id}/track`);
     } catch (err) {
@@ -84,16 +84,16 @@ const Checkout = () => {
   };
 
   const handlePaymentSuccess = (paymentData) => {
+    clearCart();
     setPaymentModal({ open: false, orderId: null });
     toast.success('Payment successful! Order confirmed 🎉');
     navigate(`/orders/${paymentModal.orderId}/track`);
   };
 
   const handlePaymentClose = () => {
-    // If modal is closed without payment, navigate to tracking anyway (COD fallback)
-    const { orderId } = paymentModal;
+    // If modal is closed without payment, we do not confirm the order
     setPaymentModal({ open: false, orderId: null });
-    if (orderId) navigate(`/orders/${orderId}/track`);
+    toast.error('Payment cancelled');
   };
 
   if (cartItems.length === 0 && !paymentModal.open) {

@@ -47,6 +47,9 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
   const [split, setSplit]        = useState(null);
   const [error, setError]        = useState('');
   const [upiUri, setUpiUri]      = useState('');
+  const [enteredUtr, setEnteredUtr] = useState('');
+  const [showUtrInput, setShowUtrInput] = useState(false);
+  const [screenshot, setScreenshot] = useState(null);
 
   // Countdown timer during processing step
   useEffect(() => {
@@ -62,6 +65,9 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
   const handleInitiate = async () => {
     if (!selectedApp) return;
     setError('');
+    setShowUtrInput(false);
+    setEnteredUtr('');
+    setScreenshot(null);
     setStep('processing');
     setTimeLeft(TIMER_SECONDS);
     try {
@@ -77,7 +83,6 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
     }
   };
 
-  // Step 2: Simulate payment success (user clicks "I've Paid")
   const handleConfirm = useCallback(async () => {
     setStep('processing');
     setError('');
@@ -90,12 +95,11 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
       setUpiRef(data.data.upiRef);
       setSplit(data.data.splitDetails);
       setStep('success');
-      onSuccess && onSuccess(data.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Payment confirmation failed');
       setStep('failed');
     }
-  }, [orderId, selectedApp, onSuccess]);
+  }, [orderId, selectedApp]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -193,12 +197,69 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
                     🚀 Open {selectedApp} Again
                   </button>
                 )}
-                <button
-                  onClick={handleConfirm}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-black shadow-lg shadow-green-200 transition-all hover:scale-[1.02]"
-                >
-                  ✅ I've Completed Payment
-                </button>
+                {showUtrInput ? (
+                  <div className="space-y-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-left">
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">
+                        Enter 12-digit UPI Reference No.
+                      </label>
+                      <input
+                        type="text"
+                        value={enteredUtr}
+                        onChange={(e) => {
+                          setEnteredUtr(e.target.value.replace(/\D/g, '').slice(0, 12));
+                          if (e.target.value) setScreenshot(null); // Clear screenshot if typing UTR
+                        }}
+                        placeholder="e.g. 312345678901"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl text-center font-black tracking-widest focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+
+                    <div className="relative flex items-center py-1">
+                      <div className="flex-grow border-t border-slate-100"></div>
+                      <span className="flex-shrink-0 mx-4 text-xs text-slate-400 font-bold uppercase tracking-widest">or</span>
+                      <div className="flex-grow border-t border-slate-100"></div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">
+                        Upload Payment Screenshot
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setScreenshot(e.target.files[0]);
+                            setEnteredUtr(''); // Clear UTR if file selected
+                          }
+                        }}
+                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-xl bg-slate-50 outline-none"
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        if (enteredUtr.length !== 12 && !screenshot) {
+                          setError('Please enter a 12-digit UTR number or upload a screenshot');
+                          return;
+                        }
+                        handleConfirm();
+                      }}
+                      disabled={enteredUtr.length !== 12 && !screenshot}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-black shadow-lg shadow-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                    >
+                      Verify Payment
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowUtrInput(true)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-black shadow-lg shadow-green-200 transition-all hover:scale-[1.02]"
+                  >
+                    ✅ I've Completed Payment
+                  </button>
+                )}
                 <button
                   onClick={() => setStep('select')}
                   className="w-full text-slate-500 py-2 font-bold hover:text-slate-700 transition"
@@ -254,7 +315,7 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
               )}
 
               <button
-                onClick={onClose}
+                onClick={() => onSuccess ? onSuccess({ txnId, upiRef }) : onClose()}
                 className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition"
               >
                 Track My Order
