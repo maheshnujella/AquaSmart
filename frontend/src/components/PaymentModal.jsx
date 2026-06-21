@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CheckCircle, X, Smartphone, Loader2, ShieldCheck, Clock } from 'lucide-react';
 import api from '../api';
+import Tesseract from 'tesseract.js';
 
 // ── UPI App brand colours ─────────────────────────────────────────────────────
 const UPI_APPS = [
@@ -89,8 +90,29 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
       return;
     }
     setStep('verifying');
+
+    if (screenshot) {
+      Tesseract.recognize(
+        screenshot,
+        'eng',
+      ).then(({ data: { text } }) => {
+        const lowerText = text.toLowerCase();
+        // Look for common payment receipt keywords
+        if (lowerText.includes('success') || lowerText.includes('paid') || lowerText.includes('₹') || lowerText.includes('aquasmart') || lowerText.includes('sent')) {
+          handleConfirm();
+        } else {
+          setError('Verification Failed: The screenshot does not appear to be a valid payment receipt.');
+          setStep('failed');
+        }
+      }).catch(err => {
+        console.error('OCR Error:', err);
+        setError('Verification Failed: Could not analyze the image.');
+        setStep('failed');
+      });
+      return;
+    }
     
-    // Simulate bank verification delay
+    // Simulate bank verification delay for UTR
     setTimeout(() => {
       // If user typed a UTR, we enforce strict testing rule
       if (enteredUtr && enteredUtr !== '123456789012') {
@@ -99,7 +121,7 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
         return;
       }
       
-      // If screenshot, or valid UTR, proceed to confirm
+      // If valid UTR, proceed to confirm
       handleConfirm();
     }, 2500);
   };
