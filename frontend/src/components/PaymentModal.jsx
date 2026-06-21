@@ -39,7 +39,7 @@ const UPI_APPS = [
 const TIMER_SECONDS = 300; // 5-minute simulated window
 
 const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
-  const [step, setStep]         = useState('select'); // select | processing | success | failed
+  const [step, setStep]         = useState('select'); // select | processing | verifying | success | failed
   const [selectedApp, setSelectedApp] = useState(null);
   const [timeLeft, setTimeLeft] = useState(TIMER_SECONDS);
   const [txnId, setTxnId]       = useState('');
@@ -83,8 +83,29 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
     }
   };
 
+  const handleVerify = () => {
+    if (enteredUtr.length !== 12 && !screenshot) {
+      setError('Please enter a 12-digit UTR number or upload a screenshot');
+      return;
+    }
+    setStep('verifying');
+    
+    // Simulate bank verification delay
+    setTimeout(() => {
+      // If user typed a UTR, we enforce strict testing rule
+      if (enteredUtr && enteredUtr !== '123456789012') {
+        setError('Verification Failed: Payment not credited to our account. Incorrect UTR.');
+        setStep('failed');
+        return;
+      }
+      
+      // If screenshot, or valid UTR, proceed to confirm
+      handleConfirm();
+    }, 2500);
+  };
+
   const handleConfirm = useCallback(async () => {
-    setStep('processing');
+    // We can keep setError('') here but the step is already 'verifying'
     setError('');
     try {
       const { data } = await api.post('/api/payments/confirm', {
@@ -200,8 +221,9 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
                 {showUtrInput ? (
                   <div className="space-y-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-left">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">
-                        Enter 12-digit UPI Reference No.
+                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5 flex justify-between">
+                        <span>Enter 12-digit UPI Reference No.</span>
+                        <span className="text-blue-500 lowercase normal-case">(Use 123456789012 to test success)</span>
                       </label>
                       <input
                         type="text"
@@ -239,13 +261,7 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
                     </div>
 
                     <button
-                      onClick={() => {
-                        if (enteredUtr.length !== 12 && !screenshot) {
-                          setError('Please enter a 12-digit UTR number or upload a screenshot');
-                          return;
-                        }
-                        handleConfirm();
-                      }}
+                      onClick={handleVerify}
                       disabled={enteredUtr.length !== 12 && !screenshot}
                       className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-black shadow-lg shadow-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                     >
@@ -266,6 +282,19 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
                 >
                   ← Change Payment Method
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step: Verifying ── */}
+          {step === 'verifying' && (
+            <div className="text-center space-y-6 py-8">
+              <div className="relative w-20 h-20 mx-auto">
+                <Loader2 className="w-20 h-20 text-blue-600 animate-spin" />
+              </div>
+              <div>
+                <p className="text-xl font-black text-slate-900">Verifying Payment</p>
+                <p className="text-sm text-slate-500 mt-1">Please wait while we confirm with the bank...</p>
               </div>
             </div>
           )}
