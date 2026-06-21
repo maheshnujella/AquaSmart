@@ -221,9 +221,8 @@ const PaymentModal = ({ orderId, amount, onSuccess, onClose }) => {
                 {showUtrInput ? (
                   <div className="space-y-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-left">
                     <div>
-                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5 flex justify-between">
-                        <span>Enter 12-digit UPI Reference No.</span>
-                        <span className="text-blue-500 lowercase normal-case">(Use 123456789012 to test success)</span>
+                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">
+                        Enter 12-digit UPI Reference No.
                       </label>
                       <input
                         type="text"
