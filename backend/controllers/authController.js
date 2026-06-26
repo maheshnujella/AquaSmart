@@ -286,7 +286,7 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     user.resetPasswordToken = crypto.createHash('sha256').update(otp).digest('hex');
     user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
     await user.save({ validateBeforeSave: false });
@@ -316,7 +316,7 @@ const forgotPassword = async (req, res) => {
     });
   } catch (error) {
     console.error('[FORGOT-PWD] ❌ Error:', error.message);
-    return res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+    return res.status(500).json({ success: false, message: `Server error: ${error.message}` });
   }
 };
 
