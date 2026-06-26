@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const sendSMS = require('../utils/sendSMS');
 // ─── Generate JWT ─────────────────────────────────────────────────────────────
 const generateToken = (id) => {
   if (!process.env.JWT_SECRET) {
@@ -291,8 +292,10 @@ const forgotPassword = async (req, res) => {
     user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
     await user.save({ validateBeforeSave: false });
 
-    // Send Email OTP
-    if (user.email) {
+    // Send Email or SMS OTP
+    const isEmail = login.includes('@');
+    
+    if (isEmail && user.email) {
       try {
         const message = `Hello ${user.name},\n\nYour OTP for resetting your password at AquaSmart is: ${otp}\n\nIt is valid for 15 minutes.`;
         await sendEmail({
@@ -304,9 +307,11 @@ const forgotPassword = async (req, res) => {
       } catch (err) {
         console.error('[FORGOT-PWD] ❌ Failed to send OTP email:', err);
       }
+    } else if (!isEmail && user.phone) {
+      const message = `AquaSmart: Your password reset OTP is ${otp}. It is valid for 15 minutes.`;
+      await sendSMS(user.phone, message);
     } else {
-      // If phone only, log it for now
-      console.log(`[FORGOT-PWD] 📱 OTP generated for phone user ${user.phone}: ${otp}`);
+      console.log(`[FORGOT-PWD] ⚠️ No valid contact method found for OTP generation (User ID: ${user._id})`);
     }
 
     return res.json({
