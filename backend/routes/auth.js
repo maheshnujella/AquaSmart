@@ -46,7 +46,7 @@ router.put('/profile', protect, updateUserProfile);
 // ─── POST /api/auth/forgot-password ──────────────────────────────────────────
 router.post('/forgot-password', authLimiter, forgotPassword);
 
-// ─── POST /api/auth/reset-password/:token ────────────────────────────────────
-router.post('/reset-password/:token', resetPassword);
+// ─── POST /api/auth/reset-password ───────────────────────────────────────────
+router.post('/reset-password', resetPassword);
 
 module.exports = router;

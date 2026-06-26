@@ -12,6 +12,7 @@ import Home              from './pages/Home';
 import Login             from './pages/Login';
 import Register          from './pages/Register';
 import DoctorRegister    from './pages/DoctorRegister';
+import ForgotPassword    from './pages/ForgotPassword';
 
 // Module pages
 import Feed              from './pages/modules/Feed';
@@ -86,6 +87,7 @@ function App() {
         <Route path="/login"           element={<Login />} />
         <Route path="/register"        element={<Register />} />
         <Route path="/doctor/register" element={<DoctorRegister />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Role-based redirect (e.g. after login redirect) */}
         <Route path="/role-redirect" element={<RoleRedirect />} />

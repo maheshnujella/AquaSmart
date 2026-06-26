@@ -88,8 +88,14 @@ const Login = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2"
               >
-                {showPassword ? <EyeOff /> : <Eye />}
+                {showPassword ? <EyeOff className="text-white/60" /> : <Eye className="text-white/60" />}
               </button>
+            </div>
+
+            <div className="flex justify-end !mt-2">
+              <Link to="/forgot-password" className="text-sm font-medium text-blue-300 hover:text-white transition-colors">
+                Forgot Password?
+              </Link>
             </div>
 
             <button

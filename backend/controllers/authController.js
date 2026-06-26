@@ -286,19 +286,32 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const otp = crypto.randomInt(100000, 999999).toString();
+    user.resetPasswordToken = crypto.createHash('sha256').update(otp).digest('hex');
     user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
     await user.save({ validateBeforeSave: false });
 
-    const resetUrl = `${process.env.FRONTEND_URL || 'https://aquasmart123.vercel.app'}/reset-password/${resetToken}`;
-    console.log(`🔑 [FORGOT-PWD] Reset token for ${user.email || user.phone}: ${resetToken}`);
+    // Send Email OTP
+    if (user.email) {
+      try {
+        const message = `Hello ${user.name},\n\nYour OTP for resetting your password at AquaSmart is: ${otp}\n\nIt is valid for 15 minutes.`;
+        await sendEmail({
+          email: user.email,
+          subject: 'AquaSmart - Password Reset OTP',
+          message,
+        });
+        console.log(`[FORGOT-PWD] 📧 OTP sent to ${user.email}`);
+      } catch (err) {
+        console.error('[FORGOT-PWD] ❌ Failed to send OTP email:', err);
+      }
+    } else {
+      // If phone only, log it for now
+      console.log(`[FORGOT-PWD] 📱 OTP generated for phone user ${user.phone}: ${otp}`);
+    }
 
     return res.json({
       success: true,
-      message: 'Password reset link generated',
-      resetToken,
-      resetUrl,
+      message: 'OTP sent successfully',
       expiresIn: '15 minutes',
     });
   } catch (error) {
@@ -308,21 +321,21 @@ const forgotPassword = async (req, res) => {
 };
 
 // ─── @desc    Reset password
-// ─── @route   POST /api/auth/reset-password/:token
+// ─── @route   POST /api/auth/reset-password
 // ─── @access  Public ──────────────────────────────────────────────────────────
 const resetPassword = async (req, res) => {
   try {
-    const { token } = req.params;
-    const { password } = req.body;
+    const { login, otp, password } = req.body;
 
-    if (!password) {
+    if (!login || !otp || !password) {
       return res
         .status(400)
-        .json({ success: false, message: 'Please provide a new password' });
+        .json({ success: false, message: 'Please provide login, OTP, and new password' });
     }
 
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const hashedToken = crypto.createHash('sha256').update(otp).digest('hex');
     const user = await User.findOne({
+      $or: [{ email: login.toLowerCase().trim() }, { phone: login.trim() }],
       resetPasswordToken: hashedToken,
       resetPasswordExpire: { $gt: Date.now() },
     });
@@ -330,7 +343,7 @@ const resetPassword = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired reset link. Please request a new one.',
+        message: 'Invalid OTP or OTP has expired. Please request a new one.',
       });
     }
 
