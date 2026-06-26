@@ -1,6 +1,6 @@
 const Order = require('../models/Order');
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
 // @desc    Create new order

@@ -1,5 +1,5 @@
 const Order = require('../models/Order');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 // @desc    Generate and send OTP for delivery
 // @route   POST /api/orders/:id/otp/generate
