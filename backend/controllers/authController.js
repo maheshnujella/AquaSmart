@@ -96,9 +96,7 @@ const registerUser = async (req, res) => {
       shopName: shopName || undefined,
       vehicleType: vehicleType || undefined,
       vehicleNumber: vehicleNumber || undefined,
-      isEmailVerified: email ? false : true, // If phone only, maybe we consider it verified for now, depending on req.
-      emailVerificationOTP: email ? otp : undefined,
-      emailVerificationOTPExpires: email ? otpExpires : undefined,
+      isEmailVerified: true,
     });
 
     if (!user) {
@@ -107,29 +105,6 @@ const registerUser = async (req, res) => {
 
     console.log(`[REGISTER] ✅ User created but unverified: ${user._id} | role: ${user.role}`);
 
-    // ── Send Email OTP ────────────────────────────────────────────────────────
-    if (email) {
-      try {
-        const message = `Hello ${user.name},\n\nYour OTP for registering at AquaSmart is: ${otp}\n\nIt is valid for 10 minutes.`;
-        await sendEmail({
-          email: user.email,
-          subject: 'AquaSmart - Email Verification OTP',
-          message,
-        });
-        console.log(`[REGISTER] 📧 OTP sent to ${user.email}`);
-      } catch (err) {
-        console.error('[REGISTER] ❌ Failed to send OTP email:', err);
-      }
-      
-      return res.status(201).json({
-        success: true,
-        message: 'Registration successful. Please verify your email with the OTP sent to you.',
-        userId: user._id,
-        requiresVerification: true,
-      });
-    }
-
-    // If phone only registration, proceed to login immediately
     const token = generateToken(user._id);
     setTokenCookie(res, token);
 
@@ -201,16 +176,6 @@ const loginUser = async (req, res) => {
     if (!isMatch) {
       console.log(`[LOGIN] Wrong password for: ${loginIdentifier}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    if (user.email && !user.isEmailVerified) {
-      console.log(`[LOGIN] Blocked: Unverified email for: ${loginIdentifier}`);
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Email not verified. Please verify your email first.',
-        requiresVerification: true,
-        userId: user._id
-      });
     }
 
     const token = generateToken(user._id);
